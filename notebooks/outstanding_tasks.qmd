@@ -9,6 +9,8 @@ editor_options:
 2. rerun analyses
 
     - use number of lapses as moderator? (does engaging in illicit behavior change perceptions about providing data on use?)
+    
+    - Cross compare affect and theme
   
   
 3. get overall EMA compliance and disposition

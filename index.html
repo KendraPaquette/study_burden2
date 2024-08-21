@@ -165,8 +165,15 @@ div.csl-indent {
    
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
-  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a></li>
-  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul class="collapse">
+  <li><a href="#qualitative-analyses" id="toc-qualitative-analyses" class="nav-link" data-scroll-target="#qualitative-analyses">Qualitative Analyses</a></li>
+  </ul></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a>
+  <ul class="collapse">
+  <li><a href="#thematic-analysis" id="toc-thematic-analysis" class="nav-link" data-scroll-target="#thematic-analysis">Thematic Analysis</a></li>
+  <li><a href="#topic-modeling" id="toc-topic-modeling" class="nav-link" data-scroll-target="#topic-modeling">Topic Modeling</a></li>
+  </ul></li>
   <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion">Discussion</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
@@ -184,19 +191,65 @@ div.csl-indent {
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <ul>
-<li>The importance of stakeholder engagement from the beginning (i.e., before an intervention is developed).</li>
+<li><p>Opioid use disorder is defined as the chronic use of opioids for non-medical reasons that causes clinically significant distress or impairment. In 2021, over 80,000 people in the United States died from an opioid overdose. This was the 8th leading cause of death that year, right behind diabetes.</p></li>
+<li><p>Opioid use disorder is a chronic, relapsing disease, but there are very few long term supports for people in recovery.</p></li>
+<li><p>Risk monitoring could be a potential avenue to provide long-term support for those in recovery. It use personal sensing, which is the collection of data using sensors in smartphones, and machine learning to predict and alert individuals that their risk of relapse is high. While its potential for reaching a largely underserved population is high, it requires individuals to find personal sensing acceptable.</p></li>
+<li><p>The importance of stakeholder engagement from the beginning (i.e., before an intervention is developed).</p></li>
+<li><p>We can expect individuals to have different preferences about which methods they choose to engage in. This becomes an even more important consideration when factors associated with specific groups present barriers to fulfilling of minimum data compliance thresholds (e.g., working 3rd shift, being a single working mom with little time to check her phone, living in an area with weak internet service). We are curious to explore how different demographic factors may impact behavioral and subjective indicators of acceptability and how these factors might be reflected in participant’s free response comments. What we learn from the behavioral and subjective indicators of acceptability stemming from different demographic factors will shape the creation of future interventions to ensure everyone is receiving effective treatment.</p></li>
+<li><p>People can comply with active sensing methods (EMA), even when using substances. Previous research has shown that individuals with alcohol use disorder using sensing methods for three months found them to be acceptable.</p></li>
+<li><p>However, there are reasons to suspect this could be different among those with other substance use disorders, particularly opioid use disorder. Opioids are an illegal class of drug, which could make individuals fear being arrested for relapsing back to use.</p></li>
+<li><p>Like most health and mental health conditions, treatment disparities among race/ethnic minority groups are prevalent with Opioid use disorder.</p></li>
+<li><p>The aims of this study are to assess if individuals with opioid use disorder from a national sample find personal sensing methods to be acceptable and to identify if there are any differences in acceptability between different race/ethnicities.</p></li>
+<li><p>Our study was unique in that we let participants respond openly on the survey so that we could determine their perceptions of these personal sensing methods. We used their own words to determine the themes that will inform us of the strengths, challenges, and barriers associated with these methods.</p></li>
 </ul>
 </section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
+<ul>
+<li><p>We recruited individuals in treatment for Opioid Use Disorder across the United States. Individuals were asked to download a digital therapeutic onto their smartphones and provide personal sensing data for up to one year. Specifically, they completed a brief daily survey, a longer monthly survey, and gave us access to sensed geolocation, SMS and phone call logs, and text message content.</p></li>
+<li><p>Participants were asked to provide open ended feedback on their experience with each sensing method at approximately 3-4 months into the study with the prompt - “Please share any positive or negative comments you have about the Sensing Method.”</p></li>
+</ul>
+<section id="qualitative-analyses" class="level3">
+<h3 class="anchored" data-anchor-id="qualitative-analyses">Qualitative Analyses</h3>
+<p>We used two complementary analytic methods to analyze participants’ comments about the personal sensing methods.</p>
+<p>The first method was thematic analysis. This is a systematic approach for identifying, analyzing, and reporting patterns or themes within qualitative data. It is top-down in that it uses domain expertise to create a codebook of thematic categories driven by the aims and questions of the research being conducted. As coding is underway the codebook iteratively expands to include additional themes.</p>
+<pre><code>- Thematic analysis was utilized to code comments from our burden survey. Our code book was designed based on deductive codes informed by prior research and was then iteratively expanded through review of the comments. Codes addressed were: acceptability, sustainability, benefits, trust, usability, and feedback. We also noted if the comments possessed a positive, negative, or neutral/mixed affect. Once the code book was developed, the comments were coded by two independent coders. When coding was completed, a script was written in R to find any discrepancies between the two coding sheets. Any discrepancies found between the two coding sheets were discussed by the coders until they mutually agreed on the codes. </code></pre>
+<p>The second method was topic modeling. This approach uses Natural Language Processing and unsupervised machine learning methods to identify clusters of words that co-occur frequently together. It is a bottom-up approach in that thematic categories are created from the data without any top-down interference. This is a promising method, particularly when looking at demographic differences because themes we may not have thought of can emerge and inform us.</p>
+<pre><code>- We used Structural topic modeling. This acts differently from more traditional topic modeling approaches in that the document-level metadata can be added into the modeling process.
+
+- We used race and data type as covariates and saw how the content of the topics might shift from one group to the next.
+
+- We looked at the top words defined by FREX, a metric that evaluates word frequency and exclusivity to a topic.</code></pre>
+</section>
 </section>
 <section id="results" class="level2">
 <h2 class="anchored" data-anchor-id="results">Results</h2>
+<section id="thematic-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="thematic-analysis">Thematic Analysis</h3>
+<ul>
+<li><p>We began with a total of 1,356 comments. The first coder went through and identified any irrelevant comments, comments that were two words or less, while coding independently. After the excluding process, there were 647 comments in total retained and coded by both independent coders. For the results, we’ll report on the overall percentage of comments in each them and separately by data type and also differences in proportion of themes by race/ethnicity.</p></li>
+<li><p>We found a significant difference in the proportion of positive and negative comments by Hispanic participants compared to White participants for the monthly update.</p></li>
+<li><p>Positive comments were also notably less for SMS content for Black and Hispanic groups. Additionally Black participants were significantly more likely to report negative comments for about this sensing.</p></li>
+<li><p>Finally, Black participants were significantly less likely to report positive comments about geolocation compared to white participants.</p></li>
+<li><p>Looking at patterns of benefits and trust may help explain these differences.</p></li>
+<li><p>Black participants reported virtually no benefits in their comments about geolocation and SMS Content, whereas for these same categories they reported higher percentages of comments that were related to trust for these sensing methods.</p></li>
+<li><p>And going back to the negative comments about the monthly update in the Hispanic group. This plots on the sustainability of the methods offer additional insight. The only sensing method people in the Hispanic group made sustainability comments was about the monthly update. And these comments were much more frequent than the other groups. This suggests that perhaps the longer length of the survey or something inherent in the method was making it difficult for people in this group to complete it each month.</p></li>
+</ul>
+</section>
+<section id="topic-modeling" class="level3">
+<h3 class="anchored" data-anchor-id="topic-modeling">Topic Modeling</h3>
+<ul>
+<li><p>We found there were 15 unique topics and 6 significantly differed by race/ethnicity.</p></li>
+<li><p>no sig differences by gender or income</p></li>
+</ul>
+</section>
 </section>
 <section id="discussion" class="level2">
 <h2 class="anchored" data-anchor-id="discussion">Discussion</h2>
 <ul>
-<li>Benefits reported benefits with active methods (e.g., reflection, daily pauses, we aligning with goals). The passive methods offered no explicit benefits. We know from previous research that perceived benefits in research and healthcare play an important role in trust.</li>
+<li><p>On average, participants found these methods to be acceptable and saw benefits from using them.</p></li>
+<li><p>However, its important to acknowledge that not all participants felt this way. There were differences in acceptability of personal sensing types, specifically monthly updates from Hispanic participants and geolocation and message content from Black participants.</p></li>
+<li><p>Benefits reported benefits with active methods (e.g., reflection, daily pauses, we aligning with goals). The passive methods offered no explicit benefits. We know from previous research that perceived benefits in research and healthcare play an important role in trust.</p></li>
 </ul>
 </section>
 <section id="references" class="level2">
