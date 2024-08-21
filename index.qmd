@@ -1,5 +1,5 @@
 ---
-title: Understanding patient experiences with personsal sensing in a sample of people with opioid use disorder
+title: Understanding patient experiences with personsal sensing in a national sample of people with opioid use disorder
 author:
   - name: Kendra Wyant 
     orcid: 0000-0002-0767-7589
@@ -12,7 +12,7 @@ author:
     corresponding: false
     roles: []
     affiliations:
-      - Department of Psychology, University of Wisconsin-Madison
+      - Department of Psychology, University of Wisconsin-Madison  
   - name: Olivia Cox 
     orcid: 
     corresponding: false
@@ -40,25 +40,25 @@ editor_options:
 
 ## Introduction
 
-- Opioid use disorder is defined as the chronic use of opioids for non-medical reasons that causes clinically significant distress or impairment. In 2021, over 80,000 people in the United States died from an opioid overdose. This was the 8th leading cause of death that year, right behind diabetes. 
+In 2021, over 80,000 people in the United States died from an opioid overdose. This was the 8th leading cause of death that year, right behind diabetes. 
 
-- Opioid use disorder is a chronic, relapsing disease, but there are very few long term supports for people in recovery.
+Opioid use disorder is a chronic, relapsing disease, but there are very few long term supports for people in recovery.
 
-- Risk monitoring could be a potential avenue to provide long-term support for those in recovery. It use personal sensing, which is the collection of data using sensors in smartphones, and machine learning to predict and alert individuals that their risk of relapse is high. While its potential for reaching a largely underserved population is high, it requires individuals to find personal sensing acceptable. 
+Algorithm-guided risk monitoring that uses personally sensed data and machine learning methods to predict and alert individuals when their relapse risk is high could be a potential target for providing long-term support.  
 
-- The importance of stakeholder engagement from the beginning (i.e., before an intervention is developed).  
+People can comply with even highly effortful sensing methods (e.g., 4 x daily EMA) while using substances [@wyantAcceptabilityPersonalSensing2023; @jonesComplianceEcologicalMomentary2019a].
 
-- We can expect individuals to have different preferences about which methods they choose to engage in. This becomes an even more important consideration when factors associated with specific groups present barriers to fulfilling of minimum data compliance thresholds (e.g., working 3rd shift, being a single working mom with little time to check her phone, living in an area with weak internet service). We are curious to explore how different demographic factors may impact behavioral and subjective indicators of acceptability and how these factors might be reflected in participant's free response comments. What we learn from the behavioral and subjective indicators of acceptability stemming from different demographic factors will shape the creation of future interventions to ensure everyone is receiving effective treatment. 
+Previous research has shown personal sensing to be generally acceptable to people with alcohol use disorder [@wyantAcceptabilityPersonalSensing2023]. There is reason to suspect that these findings could differ when generalizing to other substances. For example, individuals may be hesitant to provide self-report information about their use or have their location tracked if they fear legal consequences from relapsing back to use. Additionally, this sample was majority non-Hispanic White and all located in the Madison, WI, USA area.
 
-- People can comply with active sensing methods (EMA), even when using substances. Previous research has shown that individuals with alcohol use disorder using sensing methods for three months found them to be acceptable. 
+Like most health and mental health conditions, treatment and outcome disparities among underrepresented groups are prevalent with opioid use disorder.
 
-- However, there are reasons to suspect this could be different among those with other substance use disorders, particularly opioid use disorder. Opioids are an illegal class of drug, which could make individuals fear being arrested for relapsing back to use. 
+For algorithm-guided risk monitoring to be a viable support option, it is important that it is perceived to be equally acceptable across different groups of people. Without this, it is possible that providing a support tool only acceptable to a majority group, could widen existing disparities.
 
-- Like most health and mental health conditions, treatment disparities among race/ethnic minority groups are prevalent with Opioid use disorder.
+It is expected that individuals will have different preferences about which sensing methods are most acceptable. However, we may see general patterns in preferences based on demographic and group characteristics. For example, working 3rd shift, being a single working mom with little time to check her phone, or living in an area with weak internet service could all present barriers to fulfilling minimum data adherence thresholds needed for self-report sensing data. Trust and related privacy concerns about providing sensitive sensed data like geolocation and text message content may be greater concern in historically marginalized groups that have experienced systemic racism and other stigma [@marwickPrivacyMarginsUnderstanding2018]. These individuals may find it more difficult to achieve privacy in their daily lives, and they may hold very different perspectives on the costs vs. benefits of surveillance in the context of personal sensing or more generally. 
 
-- The aims of this study are to assess if individuals with opioid use disorder from a national sample find personal sensing methods to be acceptable and to identify if there are any differences in acceptability between different race/ethnicities. 
+This mixed-methods study explores the acceptability and feasibility of personal sensing methods in a national sample of patients with opioid use disorder. It examines overall feasibility related to adherence and retention for providing personally sensed data for up to twelve months. It also uses two complementary qualitative methods to assess participant feedback on their experiences with various sensing methods after using the methods for 3-4 months. Finally, this study specifically assesses differences in patient adherence and feedback by sensing method and four demographic characteristics (race/ethnicity, socioeconomic status, sex at birth, and location). 
 
-- Our study was unique in that we let participants respond openly on the survey so that we could determine their perceptions of these personal sensing methods. We used their own words to determine the themes that will inform us of the strengths, challenges, and barriers associated with these methods.
+We hope to highlight the importance of stakeholder engagement from the beginning (i.e., before an intervention is developed) and provide important considerations about the strengths, challenges, and barriers to implementing algorithm-guided risk monitoring.
 
 
 
@@ -67,6 +67,12 @@ editor_options:
 - We recruited individuals in treatment for Opioid Use Disorder across the United States. Individuals were asked to download a digital therapeutic onto their smartphones and provide personal sensing data for up to one year. Specifically, they completed a brief daily survey, a longer monthly survey, and gave us access to sensed geolocation, SMS and phone call logs, and text message content. 
 
 - Participants were asked to provide open ended feedback on their experience with each sensing method at approximately 3-4 months into the study with the prompt - “Please share any positive or negative comments you have about the Sensing Method.”
+
+### Quantitative Analyses
+overall EMA compliance and disposition
+
+- look at demographic differences in these two behavioral measures
+- Use number of lapses as moderator? (is it harder to comply behaviorally when lapsing?)
 
 ### Qualitative Analyses
 We used two complementary analytic methods to analyze participants’ comments about the personal sensing methods. 

@@ -167,12 +167,13 @@ div.csl-indent {
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
+  <li><a href="#quantitative-analyses" id="toc-quantitative-analyses" class="nav-link" data-scroll-target="#quantitative-analyses">Quantitative Analyses</a></li>
   <li><a href="#qualitative-analyses" id="toc-qualitative-analyses" class="nav-link" data-scroll-target="#qualitative-analyses">Qualitative Analyses</a></li>
   </ul></li>
   <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a>
   <ul class="collapse">
   <li><a href="#thematic-analysis" id="toc-thematic-analysis" class="nav-link" data-scroll-target="#thematic-analysis">Thematic Analysis</a></li>
-  <li><a href="#topic-modeling" id="toc-topic-modeling" class="nav-link" data-scroll-target="#topic-modeling">Topic Modeling</a></li>
+  <li><a href="#topic-modeling-1" id="toc-topic-modeling-1" class="nav-link" data-scroll-target="#topic-modeling-1">Topic Modeling</a></li>
   </ul></li>
   <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion">Discussion</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
@@ -209,17 +210,27 @@ div.csl-indent {
 <li><p>We recruited individuals in treatment for Opioid Use Disorder across the United States. Individuals were asked to download a digital therapeutic onto their smartphones and provide personal sensing data for up to one year. Specifically, they completed a brief daily survey, a longer monthly survey, and gave us access to sensed geolocation, SMS and phone call logs, and text message content.</p></li>
 <li><p>Participants were asked to provide open ended feedback on their experience with each sensing method at approximately 3-4 months into the study with the prompt - “Please share any positive or negative comments you have about the Sensing Method.”</p></li>
 </ul>
+<section id="quantitative-analyses" class="level3">
+<h3 class="anchored" data-anchor-id="quantitative-analyses">Quantitative Analyses</h3>
+<p>overall EMA compliance and disposition</p>
+<ul>
+<li>look at demographic differences in these two behavioral measures</li>
+<li>Use number of lapses as moderator? (is it harder to comply behaviorally when lapsing?)</li>
+</ul>
+</section>
 <section id="qualitative-analyses" class="level3">
 <h3 class="anchored" data-anchor-id="qualitative-analyses">Qualitative Analyses</h3>
 <p>We used two complementary analytic methods to analyze participants’ comments about the personal sensing methods.</p>
+<section id="thematic-analyses" class="level4">
+<h4 class="anchored" data-anchor-id="thematic-analyses">Thematic Analyses</h4>
 <p>The first method was thematic analysis. This is a systematic approach for identifying, analyzing, and reporting patterns or themes within qualitative data. It is top-down in that it uses domain expertise to create a codebook of thematic categories driven by the aims and questions of the research being conducted. As coding is underway the codebook iteratively expands to include additional themes.</p>
-<pre><code>- Thematic analysis was utilized to code comments from our burden survey. Our code book was designed based on deductive codes informed by prior research and was then iteratively expanded through review of the comments. Codes addressed were: acceptability, sustainability, benefits, trust, usability, and feedback. We also noted if the comments possessed a positive, negative, or neutral/mixed affect. Once the code book was developed, the comments were coded by two independent coders. When coding was completed, a script was written in R to find any discrepancies between the two coding sheets. Any discrepancies found between the two coding sheets were discussed by the coders until they mutually agreed on the codes. </code></pre>
+<p>Thematic analysis was utilized to code comments from our burden survey. Our code book was designed based on deductive codes informed by prior research and was then iteratively expanded through review of the comments. Codes addressed were: acceptability, sustainability, benefits, trust, usability, and feedback. We also noted if the comments possessed a positive, negative, or neutral/mixed affect. Once the code book was developed, the comments were coded by two independent coders. When coding was completed, a script was written in R to find any discrepancies between the two coding sheets. Any discrepancies found between the two coding sheets were discussed by the coders until they mutually agreed on the codes.</p>
+</section>
+<section id="topic-modeling" class="level4">
+<h4 class="anchored" data-anchor-id="topic-modeling">Topic Modeling</h4>
 <p>The second method was topic modeling. This approach uses Natural Language Processing and unsupervised machine learning methods to identify clusters of words that co-occur frequently together. It is a bottom-up approach in that thematic categories are created from the data without any top-down interference. This is a promising method, particularly when looking at demographic differences because themes we may not have thought of can emerge and inform us.</p>
-<pre><code>- We used Structural topic modeling. This acts differently from more traditional topic modeling approaches in that the document-level metadata can be added into the modeling process.
-
-- We used race and data type as covariates and saw how the content of the topics might shift from one group to the next.
-
-- We looked at the top words defined by FREX, a metric that evaluates word frequency and exclusivity to a topic.</code></pre>
+<p>We used Structural topic modeling. This acts differently from more traditional topic modeling approaches in that the document-level metadata can be added into the modeling process. We used race and data type as covariates and saw how the content of the topics might shift from one group to the next. We looked at the top words defined by FREX, a metric that evaluates word frequency and exclusivity to a topic.</p>
+</section>
 </section>
 </section>
 <section id="results" class="level2">
@@ -236,8 +247,8 @@ div.csl-indent {
 <li><p>And going back to the negative comments about the monthly update in the Hispanic group. This plots on the sustainability of the methods offer additional insight. The only sensing method people in the Hispanic group made sustainability comments was about the monthly update. And these comments were much more frequent than the other groups. This suggests that perhaps the longer length of the survey or something inherent in the method was making it difficult for people in this group to complete it each month.</p></li>
 </ul>
 </section>
-<section id="topic-modeling" class="level3">
-<h3 class="anchored" data-anchor-id="topic-modeling">Topic Modeling</h3>
+<section id="topic-modeling-1" class="level3">
+<h3 class="anchored" data-anchor-id="topic-modeling-1">Topic Modeling</h3>
 <ul>
 <li><p>We found there were 15 unique topics and 6 significantly differed by race/ethnicity.</p></li>
 <li><p>no sig differences by gender or income</p></li>
