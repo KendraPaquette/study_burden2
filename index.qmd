@@ -44,9 +44,11 @@ In 2021, over 80,000 people in the United States died from an opioid overdose. T
 
 Opioid use disorder is a chronic, relapsing disease, but there are very few long term supports for people in recovery.
 
+High risk of overdose after initial period of remission. 
+
 Algorithm-guided risk monitoring that uses personally sensed data and machine learning methods to predict and alert individuals when their relapse risk is high could be a potential target for providing long-term support.  
 
-People can comply with even highly effortful sensing methods (e.g., 4 x daily EMA) while using substances [@wyantAcceptabilityPersonalSensing2023; @jonesComplianceEcologicalMomentary2019a].
+People can comply with highly effortful sensing methods (e.g., 4 x daily EMA) while using substances [@wyantAcceptabilityPersonalSensing2023; @jonesComplianceEcologicalMomentary2019a].
 
 Previous research has shown personal sensing to be generally acceptable to people with alcohol use disorder [@wyantAcceptabilityPersonalSensing2023]. There is reason to suspect that these findings could differ when generalizing to other substances. For example, individuals may be hesitant to provide self-report information about their use or have their location tracked if they fear legal consequences from relapsing back to use. Additionally, this sample was majority non-Hispanic White and all located in the Madison, WI, USA area.
 
