@@ -1,0 +1,11 @@
+---
+title: Notes
+editor_options: 
+  chunk_output_type: console
+---
+
+- Burden data from 247 participants. 
+- All participants provided quant data
+- 222 provided qual data (205 provided comments that were coded)
+- We coded a total of 713 comments from 205 participants. We filtered out comments that equate to NA (e.g., None, No, Na, No comment).
+- participants completed survey on average after being on study for 4 months (range = 62-142 days)
