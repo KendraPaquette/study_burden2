@@ -1,5 +1,5 @@
 ---
-title: "Make burden data" 
+title: "Quantitative Analyses" 
 author: "Kendra Wyant"
 date: "`r lubridate::today()`"
 format: 
@@ -91,7 +91,7 @@ interference_plot_data <- burden |>
                                           "Strongly disagree"))) 
 
 
-interference_plot_data |> 
+plot_int <- interference_plot_data |> 
   ggplot(aes(x = value, y = after_stat(prop), group = measure)) +
   geom_bar(color = "black", fill = "light grey") +
   facet_grid(~ measure) +
@@ -107,6 +107,15 @@ interference_plot_data |>
   geom_vline(aes(xintercept = means), interference_plot_data |> 
   group_by(measure) |> 
   summarise(means = mean(as.numeric(value), na.rm = TRUE)), linewidth = .705, color = "black") 
+```
+
+```{r}
+#| label: fig-1
+#| fig-cap: "Interference."
+#| fig-width: 7
+
+
+plot_int
 ```
 
 
@@ -173,7 +182,7 @@ burden_ana <- burden |>
 **Possibly add demographics into model as predictor**
 
 
-### Interference
+### Dislike
 
 ```{r}
 dislike_plot_data <- burden |> 
@@ -190,7 +199,7 @@ dislike_plot_data <- burden |>
                                           "Strongly disagree"))) 
 
 
-dislike_plot_data |> 
+plot_dis <- dislike_plot_data |> 
   ggplot(aes(x = value, y = after_stat(prop), group = measure)) +
   geom_bar(color = "black", fill = "light grey") +
   facet_wrap(~ measure, ncol = 3) +
@@ -206,9 +215,15 @@ dislike_plot_data |>
   geom_vline(aes(xintercept = means), dislike_plot_data |> 
   group_by(measure) |> 
   summarise(means = mean(as.numeric(value), na.rm = TRUE)), linewidth = .705, color = "black") 
+```
+
+```{r}
+#| label: fig-2
+#| fig-cap: "Dislike"
+#| fig-width: 7
 
 
-
+plot_dis
 ```
 
 Overall correlations
