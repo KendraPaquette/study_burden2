@@ -13,6 +13,12 @@ author:
     roles: []
     affiliations:
       - Department of Psychology, University of Wisconsin-Madison  
+  - name: Sarah Sant'Ana 
+    orcid: 
+    corresponding: false
+    roles: []
+    affiliations:
+      - Department of Psychology, University of Wisconsin-Madison 
   - name: Olivia Cox 
     orcid: 
     corresponding: false
