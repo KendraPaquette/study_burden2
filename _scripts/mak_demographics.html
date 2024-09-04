@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Kendra Wyant">
-<meta name="dcterms.date" content="2024-09-03">
+<meta name="dcterms.date" content="2024-09-04">
 
 <title>Demographics</title>
 <style>
@@ -3322,6 +3322,7 @@ border: 0;
   <ul class="collapse">
   <li><a href="#first-handle-raceethnicity" id="toc-first-handle-raceethnicity" class="nav-link" data-scroll-target="#first-handle-raceethnicity">First handle Race/ethnicity</a></li>
   </ul></li>
+  <li><a href="#pull-some-missing-demographics-from-consent" id="toc-pull-some-missing-demographics-from-consent" class="nav-link" data-scroll-target="#pull-some-missing-demographics-from-consent">Pull some missing demographics from consent</a></li>
   <li><a href="#check-responses-on-other-variables" id="toc-check-responses-on-other-variables" class="nav-link" data-scroll-target="#check-responses-on-other-variables">Check responses on other variables</a>
   <ul class="collapse">
   <li><a href="#gender" id="toc-gender" class="nav-link" data-scroll-target="#gender">Gender</a></li>
@@ -3363,7 +3364,7 @@ border: 0;
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 3, 2024</p>
+      <p class="date">September 4, 2024</p>
     </div>
   </div>
   
@@ -3380,47 +3381,54 @@ border: 0;
 <p>This script calculates demographics for Burden2 study.</p>
 <p>Outstanding issues:</p>
 <ul>
-<li>subid 1069 does not have intake survey.<br>
-</li>
-<li>Missing demographics for subid 1006</li>
+<li>subid 1069 does not have intake survey - was able to impute race, age, and gender.</li>
 </ul>
+<p>From Madison: 1069 is the only person who didn’t take intake because their phone was stolen right around 30 days on study.</p>
+<ul>
+<li>Missing demographics for subid 1006 - was able to impute race, age, and gender</li>
+</ul>
+<p>From Susan: It was never determined why those questions didn’t resolve for them. They had a lot of trouble with the app and surveys in general at the start. We do have some demographic data from them in their consent form, which you can grab via <code>enroll &lt;- tidy_qualtrics(&quot;dem&quot;, token_qualtrics)</code>. We also know that gender = Man.</p>
 <p>Primary variables for analyses:</p>
 <ul>
 <li>race (Non-Hispanic White, Black, Hispanic, Other)</li>
 <li>gender (male, female)</li>
 <li>income (less than $25000, more than $25000)</li>
-<li>location (still need to work on adding this data)</li>
-<li>number of lapses on study up until the start time of the burden survey</li>
+<li>location (will be calculated in separate script)</li>
+<li>number of lapses on study up until the start time of the burden survey (separate script)</li>
 </ul>
 </section>
 <section id="set-up" class="level2">
 <h2 class="anchored" data-anchor-id="set-up">Set up</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">conflicts.policy =</span> <span class="st">&quot;depends.ok&quot;</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) </span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">source_url</span>(<span class="st">&quot;https://github.com/jjcurtin/lab_support/blob/main/format_path.R?raw=true&quot;</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">source_url</span>(<span class="st">&quot;https://github.com/jjcurtin/lab_support/blob/main/print_kbl.R?raw=true&quot;</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_classic</span>())</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>path_processed <span class="ot">&lt;-</span> <span class="fu">format_path</span>(<span class="st">&quot;studydata/risk2/data_processed/shared&quot;</span>)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>path_burden <span class="ot">&lt;-</span> <span class="fu">format_path</span>(<span class="st">&quot;studydata/risk2/data_processed/burden2&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;../analysis_risk2/functions/fun_star.R&quot;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package &#39;tidyjson&#39; was built under R version 4.4.1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">source_url</span>(<span class="st">&quot;https://github.com/jjcurtin/lab_support/blob/main/format_path.R?raw=true&quot;</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">source_url</span>(<span class="st">&quot;https://github.com/jjcurtin/lab_support/blob/main/print_kbl.R?raw=true&quot;</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_classic</span>())</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>path_processed <span class="ot">&lt;-</span> <span class="fu">format_path</span>(<span class="st">&quot;studydata/risk2/data_processed/shared&quot;</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>path_burden <span class="ot">&lt;-</span> <span class="fu">format_path</span>(<span class="st">&quot;studydata/risk2/data_processed/burden2&quot;</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>path_admin <span class="ot">&lt;-</span> <span class="st">&quot;P:/administration&quot;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="read-in-data" class="level2">
 <h2 class="anchored" data-anchor-id="read-in-data">Read in data</h2>
 <p>Burden data</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>burden <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">file.path</span>(path_burden, <span class="st">&quot;burden_quant.csv&quot;</span>),</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>burden <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">file.path</span>(path_burden, <span class="st">&quot;burden_quant.csv&quot;</span>),</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Intake survey (with demographics)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>intake_survey <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(here<span class="sc">::</span><span class="fu">here</span>(path_processed, <span class="st">&quot;survey_intake.csv&quot;</span>),</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                         <span class="at">show_col_types =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(subid <span class="sc">%in%</span> burden<span class="sc">$</span>subid)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>intake_survey <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(here<span class="sc">::</span><span class="fu">here</span>(path_processed, <span class="st">&quot;survey_intake.csv&quot;</span>),</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                         <span class="at">show_col_types =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(subid <span class="sc">%in%</span> burden<span class="sc">$</span>subid)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: One or more parsing issues, call `problems()` on your data frame for details,
 e.g.:
@@ -3432,19 +3440,19 @@ e.g.:
 <section id="num-intake-surveys-per-subid" class="level2">
 <h2 class="anchored" data-anchor-id="num-intake-surveys-per-subid">Num intake surveys per subid</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">unique</span>(intake_survey<span class="sc">$</span>subid)) <span class="co"># number of unique subids (246)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">unique</span>(intake_survey<span class="sc">$</span>subid)) <span class="co"># number of unique subids (246)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 246</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">unique</span>(burden<span class="sc">$</span>subid)) <span class="co"># number of unique subids (247)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">unique</span>(burden<span class="sc">$</span>subid)) <span class="co"># number of unique subids (247)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 247</code></pre>
 </div>
 </div>
 <p>Subid 1069 does not have intake</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>burden <span class="sc">|&gt;</span> </span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>subid <span class="sc">%in%</span> intake_survey<span class="sc">$</span>subid)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>burden <span class="sc">|&gt;</span> </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>subid <span class="sc">%in%</span> intake_survey<span class="sc">$</span>subid)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 12
   subid study_start user_survey_guid                     start_date         
@@ -3460,10 +3468,10 @@ e.g.:
 <section id="missing-data" class="level2">
 <h2 class="anchored" data-anchor-id="missing-data">Missing data</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>intake_survey <span class="sc">|&gt;</span> </span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(answer)) <span class="sc">|&gt;</span> </span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">tabyl</span>(variable_name) <span class="sc">|&gt;</span> </span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>intake_survey <span class="sc">|&gt;</span> </span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(answer)) <span class="sc">|&gt;</span> </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">tabyl</span>(variable_name) <span class="sc">|&gt;</span> </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                  variable_name    n      percent
                whoassist_life_2 1620 1.067194e-01
@@ -3564,8 +3572,8 @@ e.g.:
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>intake_survey <span class="sc">|&gt;</span> </span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(variable_name <span class="sc">==</span> <span class="st">&quot;age&quot;</span> <span class="sc">&amp;</span> <span class="fu">is.na</span>(answer))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>intake_survey <span class="sc">|&gt;</span> </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(variable_name <span class="sc">==</span> <span class="st">&quot;age&quot;</span> <span class="sc">&amp;</span> <span class="fu">is.na</span>(answer))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 27
   subid user_guid       user_survey_guid start_date          complete_date      
@@ -3582,28 +3590,28 @@ e.g.:
 </div>
 <p>Missing demographics for subid 1006</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>intake_survey <span class="sc">|&gt;</span> </span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(subid <span class="sc">==</span> <span class="dv">1006</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">view</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>intake_survey <span class="sc">|&gt;</span> </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(subid <span class="sc">==</span> <span class="dv">1006</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">view</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="create-demographics-tibble-with-variables-of-interest" class="level2">
 <h2 class="anchored" data-anchor-id="create-demographics-tibble-with-variables-of-interest">Create Demographics Tibble with variables of interest</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>dem <span class="ot">&lt;-</span> intake_survey <span class="sc">|&gt;</span> </span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(subid, variable_name, answer) <span class="sc">|&gt;</span> </span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(variable_name <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;race&quot;</span>, <span class="st">&quot;gender&quot;</span>, <span class="st">&quot;orientation&quot;</span>, <span class="st">&quot;income&quot;</span>,</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                              <span class="st">&quot;employment&quot;</span>, <span class="st">&quot;education&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;romantic_status&quot;</span>,</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                              <span class="st">&quot;living_arrangement_1&quot;</span>, <span class="st">&quot;med&quot;</span>, <span class="st">&quot;whoassist_life_overdose&quot;</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dem <span class="ot">&lt;-</span> intake_survey <span class="sc">|&gt;</span> </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(subid, variable_name, answer) <span class="sc">|&gt;</span> </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(variable_name <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;race&quot;</span>, <span class="st">&quot;gender&quot;</span>, <span class="st">&quot;orientation&quot;</span>, <span class="st">&quot;income&quot;</span>,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>                              <span class="st">&quot;employment&quot;</span>, <span class="st">&quot;education&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;romantic_status&quot;</span>,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                              <span class="st">&quot;living_arrangement_1&quot;</span>, <span class="st">&quot;med&quot;</span>, <span class="st">&quot;whoassist_life_overdose&quot;</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Add missing demographics for subid 1069 (set to NA).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>dem <span class="ot">&lt;-</span> dem <span class="sc">|&gt;</span> </span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">tibble</span>(<span class="at">subid =</span> <span class="dv">1069</span>,</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">variable_name =</span> <span class="fu">c</span>(<span class="st">&quot;race&quot;</span>, <span class="st">&quot;gender&quot;</span>, <span class="st">&quot;orientation&quot;</span>, <span class="st">&quot;income&quot;</span>,</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                              <span class="st">&quot;employment&quot;</span>, <span class="st">&quot;education&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;romantic_status&quot;</span>,</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>                              <span class="st">&quot;living_arrangement_1&quot;</span>, <span class="st">&quot;med&quot;</span>, <span class="st">&quot;whoassist_life_overdose&quot;</span>),</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">answer =</span> <span class="cn">NA_character_</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dem <span class="ot">&lt;-</span> dem <span class="sc">|&gt;</span> </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">tibble</span>(<span class="at">subid =</span> <span class="dv">1069</span>,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">variable_name =</span> <span class="fu">c</span>(<span class="st">&quot;race&quot;</span>, <span class="st">&quot;gender&quot;</span>, <span class="st">&quot;orientation&quot;</span>, <span class="st">&quot;income&quot;</span>,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                              <span class="st">&quot;employment&quot;</span>, <span class="st">&quot;education&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;romantic_status&quot;</span>,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                              <span class="st">&quot;living_arrangement_1&quot;</span>, <span class="st">&quot;med&quot;</span>, <span class="st">&quot;whoassist_life_overdose&quot;</span>),</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">answer =</span> <span class="cn">NA_character_</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>247 subids in final tibble.</p>
 </section>
@@ -3618,10 +3626,10 @@ e.g.:
 <section id="first-handle-raceethnicity" class="level3">
 <h3 class="anchored" data-anchor-id="first-handle-raceethnicity">First handle Race/ethnicity</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dem <span class="sc">|&gt;</span> </span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(variable_name <span class="sc">==</span> <span class="st">&quot;race&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tabyl</span>(answer) <span class="sc">|&gt;</span> </span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print_kbl</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>dem <span class="sc">|&gt;</span> </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(variable_name <span class="sc">==</span> <span class="st">&quot;race&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tabyl</span>(answer) <span class="sc">|&gt;</span> </span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print_kbl</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:500px; overflow-x: scroll; width:100%; ">
 <table class="table table-striped table-condensed caption-top table-sm small" data-quarto-postprocess="true">
@@ -3690,7 +3698,7 @@ e.g.:
 </div>
 <p>Other</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(<span class="fu">subset</span>(intake_survey, variable_name <span class="sc">==</span> <span class="st">&quot;race_other&quot;</span>)<span class="sc">$</span>answer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(<span class="fu">subset</span>(intake_survey, variable_name <span class="sc">==</span> <span class="st">&quot;race_other&quot;</span>)<span class="sc">$</span>answer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> subset(intake_survey, variable_name == &quot;race_other&quot;)$answer   n     percent
                                                         Arab   1 0.004065041
@@ -3711,23 +3719,23 @@ e.g.:
 <p>Will create following race categories: Non-Hispanic White, Black, Hispanic, other</p>
 <p><em>Note that some people endorsed more than one race and we are not considering all possible combinations in the burden analyses.</em></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>race <span class="ot">&lt;-</span>  dem <span class="sc">|&gt;</span> </span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(variable_name <span class="sc">==</span> <span class="st">&quot;race&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(subid) <span class="sc">|&gt;</span> </span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">race =</span> <span class="fu">paste</span>(answer, <span class="at">collapse =</span> <span class="st">&quot;&quot;</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">if_else</span>(race <span class="sc">==</span> <span class="st">&quot;White/Caucasian&quot;</span>, <span class="st">&quot;Non-Hispanic White&quot;</span>, race),</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">str_remove</span>(race, <span class="st">&quot;White/Caucasian&quot;</span>),</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">if_else</span>(race <span class="sc">==</span> <span class="st">&quot;American Indian/Alaska NativeHispanic, Latino, or Spanish origin&quot;</span>, <span class="st">&quot;Hispanic, Latino, or Spanish origin&quot;</span>, race),</span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">if_else</span>(race <span class="sc">==</span> <span class="st">&quot;Black/African AmericanHispanic, Latino, or Spanish origin&quot;</span> <span class="sc">|</span> race <span class="sc">==</span> <span class="st">&quot;Hispanic, Latino, or Spanish originBlack/African American&quot;</span> <span class="sc">|</span></span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>                     race <span class="sc">==</span> <span class="st">&quot;American Indian/Alaska NativeBlack/African American&quot;</span>,</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;Black/African American&quot;</span>, race),</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">if_else</span>(race <span class="sc">==</span> <span class="st">&quot;Not listed aboveHispanic, Latino, or Spanish originAmerican Indian/Alaska NativeAsian&quot;</span>, <span class="st">&quot;Hispanic, Latino, or Spanish origin&quot;</span>, race)) <span class="sc">|&gt;</span> </span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">race =</span> <span class="fu">if_else</span>(race <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Black/African American&quot;</span>,</span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">&quot;Hispanic, Latino, or Spanish origin&quot;</span>,</span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">&quot;Non-Hispanic White&quot;</span>), race, <span class="st">&quot;other&quot;</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">race =</span> <span class="fu">if_else</span>( subid <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1006</span>, <span class="dv">1069</span>), <span class="cn">NA_character_</span>, race))</span>
-<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(race<span class="sc">$</span>race)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>race <span class="ot">&lt;-</span>  dem <span class="sc">|&gt;</span> </span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(variable_name <span class="sc">==</span> <span class="st">&quot;race&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(subid) <span class="sc">|&gt;</span> </span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">race =</span> <span class="fu">paste</span>(answer, <span class="at">collapse =</span> <span class="st">&quot;&quot;</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">if_else</span>(race <span class="sc">==</span> <span class="st">&quot;White/Caucasian&quot;</span>, <span class="st">&quot;Non-Hispanic White&quot;</span>, race),</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">str_remove</span>(race, <span class="st">&quot;White/Caucasian&quot;</span>),</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">if_else</span>(race <span class="sc">==</span> <span class="st">&quot;American Indian/Alaska NativeHispanic, Latino, or Spanish origin&quot;</span>, <span class="st">&quot;Hispanic, Latino, or Spanish origin&quot;</span>, race),</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">if_else</span>(race <span class="sc">==</span> <span class="st">&quot;Black/African AmericanHispanic, Latino, or Spanish origin&quot;</span> <span class="sc">|</span> race <span class="sc">==</span> <span class="st">&quot;Hispanic, Latino, or Spanish originBlack/African American&quot;</span> <span class="sc">|</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>                     race <span class="sc">==</span> <span class="st">&quot;American Indian/Alaska NativeBlack/African American&quot;</span>,</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;Black/African American&quot;</span>, race),</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">if_else</span>(race <span class="sc">==</span> <span class="st">&quot;Not listed aboveHispanic, Latino, or Spanish originAmerican Indian/Alaska NativeAsian&quot;</span>, <span class="st">&quot;Hispanic, Latino, or Spanish origin&quot;</span>, race)) <span class="sc">|&gt;</span> </span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">race =</span> <span class="fu">if_else</span>(race <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Black/African American&quot;</span>,</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">&quot;Hispanic, Latino, or Spanish origin&quot;</span>,</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">&quot;Non-Hispanic White&quot;</span>), race, <span class="st">&quot;other&quot;</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">race =</span> <span class="fu">if_else</span>( subid <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1006</span>, <span class="dv">1069</span>), <span class="cn">NA_character_</span>, race))</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(race<span class="sc">$</span>race)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                           race$race   n     percent valid_percent
               Black/African American  38 0.153846154    0.15510204
@@ -3739,15 +3747,15 @@ e.g.:
 </div>
 <p>Pivot dem without race</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>dem_wide <span class="ot">&lt;-</span> dem <span class="sc">|&gt;</span> </span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>variable_name <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;race&quot;</span>, <span class="st">&quot;race_other&quot;</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> variable_name, <span class="at">values_from =</span> answer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>dem_wide <span class="ot">&lt;-</span> dem <span class="sc">|&gt;</span> </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>variable_name <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;race&quot;</span>, <span class="st">&quot;race_other&quot;</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> variable_name, <span class="at">values_from =</span> answer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Add race</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>dem_wide <span class="ot">&lt;-</span> dem_wide <span class="sc">|&gt;</span> </span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(race, <span class="at">by =</span> <span class="st">&quot;subid&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>dem_wide <span class="ot">&lt;-</span> dem_wide <span class="sc">|&gt;</span> </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(race, <span class="at">by =</span> <span class="st">&quot;subid&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 247
 Columns: 12
@@ -3767,43 +3775,210 @@ $ race                    &lt;chr&gt; NA, &quot;Non-Hispanic White&quot;, &quot;
 </div>
 </section>
 </section>
+<section id="pull-some-missing-demographics-from-consent" class="level2">
+<h2 class="anchored" data-anchor-id="pull-some-missing-demographics-from-consent">Pull some missing demographics from consent</h2>
+<p>1006 (from Susan - gender = Man)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>token_qualtrics <span class="ot">&lt;-</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_csv</span>(<span class="fu">file.path</span>(path_admin, <span class="st">&quot;credentials.csv&quot;</span>), <span class="at">show_col_types =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(resource <span class="sc">==</span> <span class="st">&quot;qualtrics&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(token)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>enroll <span class="ot">&lt;-</span> <span class="fu">tidy_qualtrics</span>(<span class="st">&quot;dem&quot;</span>, token_qualtrics)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%
+
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>enroll <span class="sc">|&gt;</span> <span class="fu">filter</span>(subid <span class="sc">==</span> <span class="st">&quot;1006&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 12
+  subid consent_date    zip   si_mat_2 race_1 race_2 race_3 race_4 race_5 race_6
+  &lt;chr&gt; &lt;chr&gt;           &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt; 
+1 1006  2021-04-21 20:… 53211 2020-05… &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   White… &lt;NA&gt;  
+# ℹ 2 more variables: hispanic &lt;chr&gt;, dob &lt;chr&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>enroll <span class="sc">|&gt;</span> <span class="fu">filter</span>(subid <span class="sc">==</span> <span class="st">&quot;1006&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(dob) <span class="co"># 40</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] &quot;08/02/1984&quot;</code></pre>
+</div>
+</div>
+<p>1069</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>enroll <span class="sc">|&gt;</span> <span class="fu">filter</span>(subid <span class="sc">==</span> <span class="st">&quot;1069&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 12
+  subid consent_date    zip   si_mat_2 race_1 race_2 race_3 race_4 race_5 race_6
+  &lt;chr&gt; &lt;chr&gt;           &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt; 
+1 1069  2022-04-27 20:… 45402 2021-12… &quot;&quot;     &quot;&quot;     &quot;&quot;     &quot;&quot;     White… &quot;&quot;    
+# ℹ 2 more variables: hispanic &lt;chr&gt;, dob &lt;chr&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>enroll <span class="sc">|&gt;</span> <span class="fu">filter</span>(subid <span class="sc">==</span> <span class="st">&quot;1069&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(dob) <span class="co"># 44</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] &quot;02-15-1980&quot;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>dem_wide <span class="ot">&lt;-</span> dem_wide <span class="sc">|&gt;</span> </span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">race =</span> <span class="fu">if_else</span>(subid <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1006</span>, <span class="dv">1069</span>), <span class="st">&quot;Non-Hispanic White&quot;</span>, race),</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">gender =</span> <span class="fu">if_else</span>(subid <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1006</span>, <span class="dv">1069</span>), <span class="st">&quot;Man&quot;</span>, gender),</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">age =</span> <span class="fu">if_else</span>(subid <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1006</span>, <span class="dv">1069</span>), <span class="st">&quot;36-45&quot;</span>, age))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>check missing data again</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>naniar<span class="sc">::</span><span class="fu">miss_var_summary</span>(dem_wide)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 3
+   variable                n_miss pct_miss
+   &lt;chr&gt;                    &lt;int&gt;    &lt;num&gt;
+ 1 living_arrangement_1       142   57.5  
+ 2 employment                   2    0.810
+ 3 romantic_status              2    0.810
+ 4 orientation                  2    0.810
+ 5 education                    2    0.810
+ 6 income                       2    0.810
+ 7 whoassist_life_overdose      2    0.810
+ 8 med                          1    0.405
+ 9 subid                        0    0    
+10 age                          0    0    
+11 gender                       0    0    
+12 race                         0    0    </code></pre>
+</div>
+</div>
+</section>
 <section id="check-responses-on-other-variables" class="level2">
 <h2 class="anchored" data-anchor-id="check-responses-on-other-variables">Check responses on other variables</h2>
 <section id="gender" class="level3">
 <h3 class="anchored" data-anchor-id="gender">Gender</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>gender) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>gender) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>   dem_wide$gender   n     percent valid_percent
-               Man 122 0.493927126   0.497959184
-        Non-binary   3 0.012145749   0.012244898
-  Not listed above   2 0.008097166   0.008163265
- Prefer not to say   1 0.004048583   0.004081633
-             Woman 117 0.473684211   0.477551020
-              &lt;NA&gt;   2 0.008097166            NA</code></pre>
+<pre><code>   dem_wide$gender   n     percent
+               Man 124 0.502024291
+        Non-binary   3 0.012145749
+  Not listed above   2 0.008097166
+ Prefer not to say   1 0.004048583
+             Woman 117 0.473684211</code></pre>
 </div>
 </div>
 <p>Make courser categories for gender</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>dem_wide <span class="ot">&lt;-</span> dem_wide <span class="sc">|&gt;</span> </span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">gender =</span> <span class="fu">if_else</span>(gender <span class="sc">==</span> <span class="st">&quot;Prefer not to say&quot;</span>, <span class="cn">NA</span>, gender),</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">gender =</span> <span class="fu">if_else</span>(gender <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Man&quot;</span>, <span class="st">&quot;Woman&quot;</span>) <span class="sc">|</span> <span class="fu">is.na</span>(gender), </span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>                          gender, <span class="st">&quot;other&quot;</span>))</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>gender)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>dem_wide <span class="ot">&lt;-</span> dem_wide <span class="sc">|&gt;</span> </span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">gender =</span> <span class="fu">if_else</span>(gender <span class="sc">==</span> <span class="st">&quot;Prefer not to say&quot;</span>, <span class="cn">NA</span>, gender),</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">gender =</span> <span class="fu">if_else</span>(gender <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Man&quot;</span>, <span class="st">&quot;Woman&quot;</span>) <span class="sc">|</span> <span class="fu">is.na</span>(gender), </span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>                          gender, <span class="st">&quot;other&quot;</span>))</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>gender)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> dem_wide$gender   n    percent valid_percent
-             Man 122 0.49392713     0.5000000
-           Woman 117 0.47368421     0.4795082
-           other   5 0.02024291     0.0204918
-            &lt;NA&gt;   3 0.01214575            NA</code></pre>
+<pre><code> dem_wide$gender   n     percent valid_percent
+             Man 124 0.502024291     0.5040650
+           Woman 117 0.473684211     0.4756098
+           other   5 0.020242915     0.0203252
+            &lt;NA&gt;   1 0.004048583            NA</code></pre>
 </div>
 </div>
 </section>
 <section id="orientation" class="level3">
 <h3 class="anchored" data-anchor-id="orientation">Orientation</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>orientation) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>orientation) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                  dem_wide$orientation   n     percent valid_percent
                               Bisexual  33 0.133603239   0.134693878
@@ -3818,7 +3993,7 @@ $ race                    &lt;chr&gt; NA, &quot;Non-Hispanic White&quot;, &quot;
 <section id="income" class="level3">
 <h3 class="anchored" data-anchor-id="income">Income</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>income) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>income) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      dem_wide$income   n     percent valid_percent
   $100,000 - $149,999   3 0.012145749    0.01224490
@@ -3835,7 +4010,7 @@ $ race                    &lt;chr&gt; NA, &quot;Non-Hispanic White&quot;, &quot;
 <section id="employment" class="level3">
 <h3 class="anchored" data-anchor-id="employment">Employment</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>employment) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>employment) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                         dem_wide$employment  n     percent valid_percent
                   Disabled, not able to work 32 0.129554656   0.130612245
@@ -3851,7 +4026,7 @@ $ race                    &lt;chr&gt; NA, &quot;Non-Hispanic White&quot;, &quot;
 <section id="education" class="level3">
 <h3 class="anchored" data-anchor-id="education">Education</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>education) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>education) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                     dem_wide$education   n     percent valid_percent
                 4-year college graduate  27 0.109311741    0.11020408
@@ -3867,24 +4042,23 @@ $ race                    &lt;chr&gt; NA, &quot;Non-Hispanic White&quot;, &quot;
 <section id="age" class="level3">
 <h3 class="anchored" data-anchor-id="age">Age</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>age) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>age) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> dem_wide$age  n     percent valid_percent
-        18-21  1 0.004048583   0.004081633
-        22-25  5 0.020242915   0.020408163
-        26-35 88 0.356275304   0.359183673
-        36-45 86 0.348178138   0.351020408
-        46-55 50 0.202429150   0.204081633
-        56-65 11 0.044534413   0.044897959
-      Over 65  4 0.016194332   0.016326531
-         &lt;NA&gt;  2 0.008097166            NA</code></pre>
+<pre><code> dem_wide$age  n     percent
+        18-21  1 0.004048583
+        22-25  5 0.020242915
+        26-35 88 0.356275304
+        36-45 88 0.356275304
+        46-55 50 0.202429150
+        56-65 11 0.044534413
+      Over 65  4 0.016194332</code></pre>
 </div>
 </div>
 </section>
 <section id="committed-relationship" class="level3">
 <h3 class="anchored" data-anchor-id="committed-relationship">Committed Relationship</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>romantic_status) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>romantic_status) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> dem_wide$romantic_status   n     percent valid_percent
                        No 105 0.425101215     0.4285714
@@ -3896,7 +4070,7 @@ $ race                    &lt;chr&gt; NA, &quot;Non-Hispanic White&quot;, &quot;
 <section id="living-arrangement" class="level3">
 <h3 class="anchored" data-anchor-id="living-arrangement">Living Arrangement</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>living_arrangement_1) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>living_arrangement_1) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                   dem_wide$living_arrangement_1   n     percent valid_percent
                                 Homeless shelter   3 0.012145749    0.02857143
@@ -3912,7 +4086,7 @@ $ race                    &lt;chr&gt; NA, &quot;Non-Hispanic White&quot;, &quot;
 <section id="medication" class="level3">
 <h3 class="anchored" data-anchor-id="medication">Medication</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>med) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>med) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                                                                                     dem_wide$med
                                                    I am not taking any medications for opioid use
@@ -3932,7 +4106,7 @@ $ race                    &lt;chr&gt; NA, &quot;Non-Hispanic White&quot;, &quot;
 <section id="lifetime-history-of-overdose" class="level3">
 <h3 class="anchored" data-anchor-id="lifetime-history-of-overdose">Lifetime History of Overdose</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>whoassist_life_overdose) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dem_wide<span class="sc">$</span>whoassist_life_overdose) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> dem_wide$whoassist_life_overdose   n     percent valid_percent
                            1 time  29 0.117408907    0.11836735
@@ -3951,44 +4125,44 @@ $ race                    &lt;chr&gt; NA, &quot;Non-Hispanic White&quot;, &quot;
 <section id="get-total-dsm-score" class="level2">
 <h2 class="anchored" data-anchor-id="get-total-dsm-score">Get total DSM score</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>dsm <span class="ot">&lt;-</span> intake_survey <span class="sc">|&gt;</span> </span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(variable_name, <span class="st">&quot;dsm&quot;</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(subid, question_content, variable_name, answer) <span class="sc">|&gt;</span> </span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">answer =</span> <span class="fu">if_else</span>(answer <span class="sc">==</span> <span class="st">&quot;Yes&quot;</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>dsm <span class="ot">&lt;-</span> intake_survey <span class="sc">|&gt;</span> </span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(variable_name, <span class="st">&quot;dsm&quot;</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(subid, question_content, variable_name, answer) <span class="sc">|&gt;</span> </span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">answer =</span> <span class="fu">if_else</span>(answer <span class="sc">==</span> <span class="st">&quot;Yes&quot;</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>dsm <span class="ot">&lt;-</span> dsm <span class="sc">|&gt;</span> </span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(subid) <span class="sc">|&gt;</span> </span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dsm_criteria_1 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_1&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">|</span> (variable_name <span class="sc">==</span> <span class="st">&quot;dsm_2&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_2 =</span> <span class="fu">if_else</span>(variable_name <span class="sc">==</span> <span class="st">&quot;dsm_3&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_3 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_4&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">|</span> (variable_name <span class="sc">==</span> <span class="st">&quot;dsm_5&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">|</span> (variable_name <span class="sc">==</span> <span class="st">&quot;dsm_6&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>)  , <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_4 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_11&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_5 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_7&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_6 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_8&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_7 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_9&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_8 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_10&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_9 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_12&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_10 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_13&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>)  <span class="sc">|</span> (variable_name <span class="sc">==</span> <span class="st">&quot;dsm_14&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_11 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_15&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>)  <span class="sc">|</span> (variable_name <span class="sc">==</span> <span class="st">&quot;dsm_16&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">dsm_criteria_1 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_1) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_2 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_2) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_3 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_3) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_4 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_4) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_5 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_5) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_6 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_6) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-20"><a href="#cb49-20" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_7 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_7, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-21"><a href="#cb49-21" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_8 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_8, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-22"><a href="#cb49-22" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_9 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_9) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-23"><a href="#cb49-23" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_10 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_10) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb49-24"><a href="#cb49-24" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_11 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_10) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>dsm <span class="ot">&lt;-</span> dsm <span class="sc">|&gt;</span> </span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(subid) <span class="sc">|&gt;</span> </span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dsm_criteria_1 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_1&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">|</span> (variable_name <span class="sc">==</span> <span class="st">&quot;dsm_2&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_2 =</span> <span class="fu">if_else</span>(variable_name <span class="sc">==</span> <span class="st">&quot;dsm_3&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_3 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_4&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">|</span> (variable_name <span class="sc">==</span> <span class="st">&quot;dsm_5&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">|</span> (variable_name <span class="sc">==</span> <span class="st">&quot;dsm_6&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>)  , <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_4 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_11&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_5 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_7&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_6 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_8&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-9"><a href="#cb64-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_7 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_9&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-10"><a href="#cb64-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_8 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_10&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-11"><a href="#cb64-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_9 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_12&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-12"><a href="#cb64-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_10 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_13&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>)  <span class="sc">|</span> (variable_name <span class="sc">==</span> <span class="st">&quot;dsm_14&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-13"><a href="#cb64-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">dsm_criteria_11 =</span> <span class="fu">if_else</span>((variable_name <span class="sc">==</span> <span class="st">&quot;dsm_15&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>)  <span class="sc">|</span> (variable_name <span class="sc">==</span> <span class="st">&quot;dsm_16&quot;</span> <span class="sc">&amp;</span> answer <span class="sc">==</span> <span class="dv">1</span>) , <span class="dv">1</span>, <span class="dv">0</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb64-14"><a href="#cb64-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">dsm_criteria_1 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_1) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-15"><a href="#cb64-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_2 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_2) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-16"><a href="#cb64-16" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_3 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_3) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-17"><a href="#cb64-17" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_4 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_4) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-18"><a href="#cb64-18" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_5 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_5) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-19"><a href="#cb64-19" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_6 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_6) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-20"><a href="#cb64-20" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_7 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_7, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-21"><a href="#cb64-21" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_8 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_8, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-22"><a href="#cb64-22" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_9 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_9) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-23"><a href="#cb64-23" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_10 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_10) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb64-24"><a href="#cb64-24" aria-hidden="true" tabindex="-1"></a>            <span class="at">dsm_criteria_11 =</span> <span class="fu">if_else</span>(<span class="fu">sum</span>(dsm_criteria_10) <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>dsm <span class="ot">&lt;-</span> dsm <span class="sc">|&gt;</span> </span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dsm_total =</span> <span class="fu">sum</span>(dsm_criteria_1, dsm_criteria_2, dsm_criteria_3,</span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>                         dsm_criteria_4, dsm_criteria_5, dsm_criteria_6,</span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>                         dsm_criteria_7, dsm_criteria_8, dsm_criteria_9,</span>
-<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>                         dsm_criteria_10, dsm_criteria_11, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span> <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>dsm <span class="ot">&lt;-</span> dsm <span class="sc">|&gt;</span> </span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dsm_total =</span> <span class="fu">sum</span>(dsm_criteria_1, dsm_criteria_2, dsm_criteria_3,</span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>                         dsm_criteria_4, dsm_criteria_5, dsm_criteria_6,</span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>                         dsm_criteria_7, dsm_criteria_8, dsm_criteria_9,</span>
+<span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>                         dsm_criteria_10, dsm_criteria_11, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span> <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 246
 Columns: 13
@@ -4009,14 +4183,14 @@ $ dsm_total       &lt;dbl&gt; 10, 10, 11, 11, 10, 11, 11, 11, 10, 11, 11, 9, 8, 
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>dsm <span class="sc">|&gt;</span> </span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">min</span>(dsm_total),</span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>            <span class="fu">max</span>(dsm_total),</span>
-<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mean</span>(dsm_total),</span>
-<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>            <span class="fu">sd</span>(dsm_total),</span>
-<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>            <span class="fu">median</span>(dsm_total)) <span class="sc">|&gt;</span> </span>
-<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>dsm <span class="sc">|&gt;</span> </span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">min</span>(dsm_total),</span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>            <span class="fu">max</span>(dsm_total),</span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mean</span>(dsm_total),</span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>            <span class="fu">sd</span>(dsm_total),</span>
+<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a>            <span class="fu">median</span>(dsm_total)) <span class="sc">|&gt;</span> </span>
+<span id="cb67-8"><a href="#cb67-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 1
 Columns: 5
@@ -4026,7 +4200,7 @@ $ `mean(dsm_total)`   &lt;dbl&gt; 10.02439
 $ `sd(dsm_total)`     &lt;dbl&gt; 1.958606
 $ `median(dsm_total)` &lt;dbl&gt; 11</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dsm<span class="sc">$</span>dsm_total)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(dsm<span class="sc">$</span>dsm_total)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> dsm$dsm_total   n     percent
              0   3 0.012195122
@@ -4045,26 +4219,26 @@ $ `median(dsm_total)` &lt;dbl&gt; 11</code></pre>
 </div>
 <p>Add dsm score to dem tibble</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>dem_final <span class="ot">&lt;-</span> dem_wide <span class="sc">|&gt;</span> </span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(dsm <span class="sc">|&gt;</span> </span>
-<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(subid, dsm_total), <span class="at">by =</span> <span class="st">&quot;subid&quot;</span>)</span>
-<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(dem_final)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>dem_final <span class="ot">&lt;-</span> dem_wide <span class="sc">|&gt;</span> </span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(dsm <span class="sc">|&gt;</span> </span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(subid, dsm_total), <span class="at">by =</span> <span class="st">&quot;subid&quot;</span>)</span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(dem_final)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 247
 Columns: 13
 $ subid                   &lt;dbl&gt; 1006, 1009, 1010, 1012, 1014, 1017, 1020, 1022…
 $ employment              &lt;chr&gt; NA, &quot;Not employed, NOT looking for work&quot;, &quot;Emp…
-$ age                     &lt;chr&gt; NA, &quot;26-35&quot;, &quot;26-35&quot;, &quot;46-55&quot;, &quot;46-55&quot;, &quot;26-35…
+$ age                     &lt;chr&gt; &quot;36-45&quot;, &quot;26-35&quot;, &quot;26-35&quot;, &quot;46-55&quot;, &quot;46-55&quot;, &quot;…
 $ romantic_status         &lt;chr&gt; NA, &quot;Yes&quot;, &quot;Yes&quot;, &quot;Yes&quot;, &quot;No&quot;, &quot;Yes&quot;, &quot;Yes&quot;, &quot;…
-$ gender                  &lt;chr&gt; NA, &quot;Woman&quot;, &quot;Man&quot;, &quot;Man&quot;, &quot;Woman&quot;, &quot;Woman&quot;, &quot;…
+$ gender                  &lt;chr&gt; &quot;Man&quot;, &quot;Woman&quot;, &quot;Man&quot;, &quot;Man&quot;, &quot;Woman&quot;, &quot;Woman&quot;…
 $ living_arrangement_1    &lt;chr&gt; NA, NA, NA, NA, &quot;Living with family/others&quot;, N…
 $ orientation             &lt;chr&gt; NA, &quot;Straight, that is, not gay or lesbian&quot;, &quot;…
 $ education               &lt;chr&gt; NA, &quot;4-year college graduate&quot;, &quot;Some college o…
 $ income                  &lt;chr&gt; NA, &quot;$75, 000 - $99, 999&quot;, &quot;$50,000 - $74, 999…
 $ med                     &lt;chr&gt; &quot;Medication taken daily (e.g., Suboxone, Metha…
 $ whoassist_life_overdose &lt;chr&gt; NA, &quot;No&quot;, &quot;2-3 times&quot;, &quot;No&quot;, &quot;No&quot;, &quot;2-3 times&quot;…
-$ race                    &lt;chr&gt; NA, &quot;Non-Hispanic White&quot;, &quot;Non-Hispanic White&quot;…
+$ race                    &lt;chr&gt; &quot;Non-Hispanic White&quot;, &quot;Non-Hispanic White&quot;, &quot;N…
 $ dsm_total               &lt;dbl&gt; 10, 10, 11, 11, 10, 11, 11, 11, 10, 11, 11, 9,…</code></pre>
 </div>
 </div>
@@ -4073,32 +4247,32 @@ $ dsm_total               &lt;dbl&gt; 10, 10, 11, 11, 10, 11, 11, 11, 10, 11, 11
 <h2 class="anchored" data-anchor-id="final-eda">Final EDA</h2>
 <p>rows.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>naniar<span class="sc">::</span><span class="fu">miss_var_summary</span>(dem_final)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>naniar<span class="sc">::</span><span class="fu">miss_var_summary</span>(dem_final)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 13 × 3
    variable                n_miss pct_miss
    &lt;chr&gt;                    &lt;int&gt;    &lt;num&gt;
  1 living_arrangement_1       142   57.5  
- 2 gender                       3    1.21 
- 3 employment                   2    0.810
- 4 age                          2    0.810
- 5 romantic_status              2    0.810
- 6 orientation                  2    0.810
- 7 education                    2    0.810
- 8 income                       2    0.810
- 9 whoassist_life_overdose      2    0.810
-10 race                         2    0.810
-11 med                          1    0.405
-12 dsm_total                    1    0.405
-13 subid                        0    0    </code></pre>
+ 2 employment                   2    0.810
+ 3 romantic_status              2    0.810
+ 4 orientation                  2    0.810
+ 5 education                    2    0.810
+ 6 income                       2    0.810
+ 7 whoassist_life_overdose      2    0.810
+ 8 gender                       1    0.405
+ 9 med                          1    0.405
+10 dsm_total                    1    0.405
+11 subid                        0    0    
+12 age                          0    0    
+13 race                         0    0    </code></pre>
 </div>
 </div>
 </section>
 <section id="save-out-tibble" class="level2">
 <h2 class="anchored" data-anchor-id="save-out-tibble">Save out tibble</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>dem_final <span class="sc">|&gt;</span> </span>
-<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_csv</span>(here<span class="sc">::</span><span class="fu">here</span>(path_burden, <span class="st">&quot;demographics.csv&quot;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>dem_final <span class="sc">|&gt;</span> </span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_csv</span>(here<span class="sc">::</span><span class="fu">here</span>(path_burden, <span class="st">&quot;demographics.csv&quot;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 

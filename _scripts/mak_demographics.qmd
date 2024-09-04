@@ -17,22 +17,27 @@ This script calculates demographics for Burden2 study.
 
 Outstanding issues:
 
-- subid 1069 does not have intake survey.   
-- Missing demographics for subid 1006  
+- subid 1069 does not have intake survey - was able to impute race, age, and gender.   
+
+From Madison: 1069 is the only person who didn't take intake because their phone was stolen right around 30 days on study.   
+
+- Missing demographics for subid 1006 - was able to impute race, age, and gender 
+
+From Susan: It was never determined why those questions didn't resolve for them. They had a lot of trouble with the app and surveys in general at the start. We do have some demographic data from them in their consent form, which you can grab via `enroll <- tidy_qualtrics("dem", token_qualtrics)`. We also know that gender = Man.
 
 Primary variables for analyses:    
 
 - race (Non-Hispanic White, Black, Hispanic, Other)
 - gender (male, female)
 - income (less than \$25000, more than \$25000)
-- location (still need to work on adding this data)
-- number of lapses on study up until the start time of the burden survey
+- location (will be calculated in separate script)
+- number of lapses on study up until the start time of the burden survey (separate script)
 
 ## Set up
 ```{r}
 #| message: false
 
-options(conflicts.policy = "depends.ok")
+source(here::here("../analysis_risk2/functions/fun_star.R"))
 library(tidyverse) 
 library(janitor)
 
@@ -43,6 +48,7 @@ theme_set(theme_classic())
 
 path_processed <- format_path("studydata/risk2/data_processed/shared")
 path_burden <- format_path("studydata/risk2/data_processed/burden2")
+path_admin <- "P:/administration"
 ```
 
 ## Read in data
@@ -88,7 +94,7 @@ intake_survey |>
   filter(variable_name == "age" & is.na(answer))
 ```
 
-Missing demographics for subid 1006
+Missing demographics for subid 1006 
 ```{r}
 intake_survey |> 
   filter(subid == 1006) |> 
@@ -118,6 +124,7 @@ dem <- dem |>
 ```
 
 `r length(unique(dem$subid))` subids in final tibble.
+
 
 
 
@@ -185,6 +192,39 @@ dem_wide <- dem_wide |>
   glimpse()
 ```
 
+## Pull some missing demographics from consent   
+
+1006 (from Susan - gender = Man)
+```{r}
+token_qualtrics <-
+  read_csv(file.path(path_admin, "credentials.csv"), show_col_types = FALSE) |>
+  filter(resource == "qualtrics") |>
+  pull(token)
+
+enroll <- tidy_qualtrics("dem", token_qualtrics)
+
+enroll |> filter(subid == "1006")
+
+enroll |> filter(subid == "1006") |> pull(dob) # 40
+```
+
+1069
+```{r}
+enroll |> filter(subid == "1069")
+enroll |> filter(subid == "1069") |> pull(dob) # 44
+```
+
+```{r}
+dem_wide <- dem_wide |> 
+  mutate(race = if_else(subid %in% c(1006, 1069), "Non-Hispanic White", race),
+         gender = if_else(subid %in% c(1006, 1069), "Man", gender),
+         age = if_else(subid %in% c(1006, 1069), "36-45", age))
+```
+
+check missing data again
+```{r}
+naniar::miss_var_summary(dem_wide)
+```
 
 
 ## Check responses on other variables
