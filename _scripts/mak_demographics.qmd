@@ -20,7 +20,13 @@ Outstanding issues:
 - subid 1069 does not have intake survey.   
 - Missing demographics for subid 1006  
 
-- other things we might want to add to this tibble: dsm score and num lapses on study
+Primary variables for analyses:    
+
+- race (Non-Hispanic White, Black, Hispanic, Other)
+- gender (male, female)
+- income (less than \$25000, more than \$25000)
+- location (still need to work on adding this data)
+- number of lapses on study up until the start time of the burden survey
 
 ## Set up
 ```{r}
@@ -115,9 +121,16 @@ dem <- dem |>
 
 
 
-## Summarize demographic categories  
+## Pivot table wideron demographic variables
 
-### Race/ethnicity
+Primary variables for analyses:    
+
+- race (Non-Hispanic White, Black, Hispanic, Other)
+- gender (male, female)
+- income (less than \$25000, more than \$25000)
+
+
+### First handle Race/ethnicity
 
 ```{r}
 dem |> 
@@ -133,117 +146,121 @@ tabyl(subset(intake_survey, variable_name == "race_other")$answer)
 ```
 
 
-Will create following race categories: White, Black, Hispanic, other
+Will create following race categories: Non-Hispanic White, Black, Hispanic, other
+
+*Note that some people endorsed more than one race and we are not considering all possible combinations in the burden analyses.*
 
 ```{r}
-dem |> 
-  group_by()
+race <-  dem |> 
+  filter(variable_name == "race") |> 
+  group_by(subid) |> 
+  summarize(race = paste(answer, collapse = "")) |> 
+  mutate(
+    race = if_else(race == "White/Caucasian", "Non-Hispanic White", race),
+    race = str_remove(race, "White/Caucasian"),
+    race = if_else(race == "American Indian/Alaska NativeHispanic, Latino, or Spanish origin", "Hispanic, Latino, or Spanish origin", race),
+    race = if_else(race == "Black/African AmericanHispanic, Latino, or Spanish origin" | race == "Hispanic, Latino, or Spanish originBlack/African American" |
+                     race == "American Indian/Alaska NativeBlack/African American",
+                   "Black/African American", race),
+    race = if_else(race == "Not listed aboveHispanic, Latino, or Spanish originAmerican Indian/Alaska NativeAsian", "Hispanic, Latino, or Spanish origin", race)) |> 
+  mutate(race = if_else(race %in% c("Black/African American",
+                                    "Hispanic, Latino, or Spanish origin",
+                                    "Non-Hispanic White"), race, "other")) |> 
+  mutate(race = if_else( subid %in% c(1006, 1069), NA_character_, race))
+tabyl(race$race)
+```
+
+
+Pivot dem without race
+```{r}
+dem_wide <- dem |> 
+  filter(!variable_name %in% c("race", "race_other")) |> 
+  pivot_wider(names_from = variable_name, values_from = answer)
+```
+
+Add race
+```{r}
+dem_wide <- dem_wide |> 
+  left_join(race, by = "subid") |> 
+  glimpse()
 ```
 
 
 
-
+## Check responses on other variables
 
 ### Gender
 
 ```{r}
-dem |> 
-  filter(variable_name == "gender") |> 
-  tabyl(answer) |> 
-  print_kbl()
+tabyl(dem_wide$gender) 
+```
+
+Make courser categories for gender
+
+```{r}
+dem_wide <- dem_wide |> 
+  mutate(gender = if_else(gender == "Prefer not to say", NA, gender),
+         gender = if_else(gender %in% c("Man", "Woman") | is.na(gender), 
+                          gender, "other"))
+
+tabyl(dem_wide$gender)
 ```
 
 ### Orientation
 
 ```{r}
-dem |> 
-  filter(variable_name == "orientation") |> 
-  tabyl(answer) |> 
-  print_kbl()
+tabyl(dem_wide$orientation) 
 ```
 
 ### Income
 
 ```{r}
-dem |> 
-  filter(variable_name == "income") |> 
-  tabyl(answer) |> 
-  print_kbl()
+tabyl(dem_wide$income) 
 ```
 
 ### Employment
 
 ```{r}
-dem |> 
-  filter(variable_name == "employment") |> 
-  tabyl(answer) |> 
-  print_kbl()
+tabyl(dem_wide$employment) 
 ```
 
 ### Education
 
 ```{r}
-dem |> 
-  filter(variable_name == "education") |> 
-  tabyl(answer) |> 
-  print_kbl()
+tabyl(dem_wide$education) 
 ```
 
 ### Age
 
 ```{r}
-dem |> 
-  filter(variable_name == "age") |> 
-  tabyl(answer) |> 
-  print_kbl()
+tabyl(dem_wide$age) 
 ```
 
 ### Committed Relationship
 
 ```{r}
-dem |> 
-  filter(variable_name == "romantic_status") |> 
-  tabyl(answer) |> 
-  print_kbl()
+tabyl(dem_wide$romantic_status) 
 ```
 
 ### Living Arrangement
 
 ```{r}
-dem |> 
-  filter(variable_name == "living_arrangement_1") |> 
-  tabyl(answer) |> 
-  print_kbl()
+tabyl(dem_wide$living_arrangement_1) 
 ```
 
 ### Medication
 
 ```{r}
-dem |> 
-  filter(variable_name == "med") |> 
-  tabyl(answer) |> 
-  print_kbl()
+tabyl(dem_wide$med) 
 ```
 
 ### Lifetime History of Overdose
 
 ```{r}
-dem |> 
-  filter(variable_name == "whoassist_life_overdose") |> 
-  tabyl(answer) |> 
-  print_kbl()
+tabyl(dem_wide$whoassist_life_overdose) 
 ```
 
 
-Pivot wider and make label adjustments
-```{r}
-dem_final <- dem |> 
-   pivot_wider(names_from = "variable_name", values_from = "answer") |> 
-   mutate(race = if_else(race %in% c("Black/African American", 
-                                    "Hispanic, Latino, or Spanish origin",
-                                    "White/Caucasian", NA), race, "other"),
-          gender = if_else(gender %in% c("Man", "Woman", NA), gender, "other"))
-```
 
 
 ## Add location data
@@ -307,7 +324,22 @@ dsm |>
 tabyl(dsm$dsm_total)
 ```
 
+Add dsm score to dem tibble
+```{r}
+dem_final <- dem_wide |> 
+  left_join(dsm |> 
+  select(subid, dsm_total), by = "subid")
 
+glimpse(dem_final)
+```
+
+## Final EDA
+
+`r nrow(247)` rows. 
+
+```{r}
+naniar::miss_var_summary(dem_final)
+```
 
 
 
