@@ -29,7 +29,7 @@ Decisions:
 
 - Subid 1410 took burden survey twice on same day (within 30 min). Keep first survey.   
 
-- 10 subids completed duplicate surveys one apart. 
+- 10 subids completed duplicate surveys one month apart. 
 
     - Susan's explanation as to why there are back to back surveys (1 month apart): As for people who have them back to back, that I can explain more easily. Here's the code for selecting which survey they get: It's delivered on month 4 or month 12. HOWEVER, it was originally delivered on month 3 or 12.  We realized month 3 was technically only their second dynamic monthly survey, so we changed it to month 4 - meaning a few people who got it at month 3 took it the next month as well.
     - Keep first survey as these generally look more complete. 
