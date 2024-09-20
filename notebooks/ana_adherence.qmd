@@ -1,0 +1,319 @@
+---
+title: "EMA adherence" 
+author: "Kendra Wyant"
+date: "`r lubridate::today()`"
+format: 
+  html: 
+    embed-resources: true
+    toc: true 
+    toc_depth: 4
+editor_options: 
+  chunk_output_type: console
+--- 
+
+
+
+Purpose: This file calculates overall weekly EMA adherence using EMA survey data (`survey_daily.csv`). 
+
+## Set up
+```{r}
+#| message: false
+
+options(conflicts.policy = "depends.ok")
+library(tidyverse) 
+library(lubridate)
+
+
+devtools::source_url("https://github.com/jjcurtin/lab_support/blob/main/format_path.R?raw=true")
+
+theme_set(theme_classic())
+
+path_burden <- format_path("studydata/risk2/data_processed/burden2")
+path_shared <- format_path("studydata/risk2/data_processed/shared")
+```
+
+
+### Data
+
+```{r}
+ema <- read_csv(here::here(path_shared, "survey_daily.csv"),
+                show_col_types = FALSE) |> 
+  mutate(start_date = as_datetime(start_date, tz = "America/Chicago"))
+
+burden_quant <- read_csv(here::here(path_burden, "burden_quant.csv"),
+                   show_col_types = FALSE)
+burden_qual <- read_csv(here::here(path_burden, "burden_qual.csv"),
+                   show_col_types = FALSE)
+```
+
+subids
+```{r}
+subids <- burden_quant |> 
+  select(subid) |> 
+  bind_rows(burden_qual |> 
+              select(subid)) |> 
+  pull(subid) |>
+  unique()
+```
+
+Filter ema to burden subids
+```{r}
+ema <- ema |>
+  filter(subid %in% subids)
+```
+
+
+### Overall Adherence
+
+Data still in long format so slicing to single variable on survey
+```{r}
+ema <- ema |> 
+  group_by(subid, start_date) |> 
+  slice(1) |> 
+  ungroup()
+```
+
+Study start and end dates for each subid
+```{r}
+study_start <- ema |> 
+  group_by(subid) |> 
+  arrange(start_date) |> 
+  slice(1) |> 
+  ungroup() |> 
+  mutate(study_start = as_date(start_date)) |> 
+  select(subid, study_start)
+
+study_end <- ema |> 
+  group_by(subid) |> 
+  arrange(desc(start_date)) |> 
+  slice(1) |> 
+  ungroup() |> 
+  mutate(study_end = as_date(start_date)) |> 
+  select(subid, study_end)
+
+dates <- tibble(subid = subids) |> 
+  full_join(study_start, by = "subid") |> 
+  full_join(study_end, by = "subid")
+```
+
+
+Days on study   
+Min days on study = 122 days (all participants provided data for at least 4 months)
+```{r}
+dates |> 
+  mutate(study_days = study_end - study_start) |> 
+  arrange(study_days)
+```
+
+
+
+```{r}
+dates |> 
+  select(study_start, study_end) |> 
+  skimr::skim()
+```
+
+
+Subid 1146 has incorrect start year. Formatting issue with first EMA - remove this survey for calculating dates.
+```{r}
+ema |> 
+  filter(subid == 1146)
+
+ema <- ema |> 
+  filter(user_survey_guid != "0b4ef392-61ef-4631-b672-117a4e642f67")
+```
+
+Recalculate study start and end dates
+```{r}
+study_start <- ema |> 
+  group_by(subid) |> 
+  arrange(start_date) |> 
+  slice(1) |> 
+  ungroup() |> 
+  mutate(study_start = as_date(start_date)) |> 
+  select(subid, study_start)
+
+study_end <- ema |> 
+  group_by(subid) |> 
+  arrange(desc(start_date)) |> 
+  slice(1) |> 
+  ungroup() |> 
+  mutate(study_end = as_date(start_date)) |> 
+  select(subid, study_end)
+
+dates <- tibble(subid = subids) |> 
+  full_join(study_start, by = "subid") |> 
+  full_join(study_end, by = "subid")
+```
+
+
+Get all study days for each subid
+```{r}
+# function to map over
+get_study_days <- function(the_subid, dates) {
+  study_start <- dates |>  filter(subid == the_subid) |>  pull(study_start)
+  study_end <- dates |>  filter(subid == the_subid) |> pull(study_end)
+  study_days <- tibble(subid = the_subid, study_day = seq(study_start, study_end - days(1), by = "day")) 
+  return(study_days)
+}
+
+study_dates <- subids |> 
+  map_dfr(~get_study_days(.x, dates))
+```
+
+
+Count surveys per study day (day starts at 6 am) 
+```{r}
+ema_count <- ema |>
+  mutate(study_day = if_else(hour(start_date) >= 6, 
+                        as_date(start_date),
+                        as_date(start_date) - days(1))) |> 
+  count(subid, study_day) 
+
+
+ema_count <- ema_count |> 
+  mutate(n = if_else(n > 1, 1, n))
+```
+
+Add counts to study dates
+```{r}
+count_study_dates <- study_dates |> 
+  left_join(ema_count, by = c("subid", "study_day")) |> 
+  mutate(n = if_else(is.na(n), 0, n)) |> 
+  mutate(n_prompts = 1) 
+```
+
+
+calculate mean adherence
+```{r}
+mean_ema <- count_study_dates |> 
+  group_by(subid) |> 
+  summarize(n_total = sum(n), prompt_total = sum(n_prompts)) |> 
+  mutate(mean = n_total/prompt_total) |> 
+  ungroup() |> 
+  summarize(mean = mean(mean))
+```
+
+
+On average participants (N = `r length(subids)`) completed `r round(mean_ema$mean, 2)` daily surveys each day they were on study. That is their overall adherence for a once daily EMA was `r round(mean_ema$mean, 2)*100`%.    
+
+
+Hist of overall adherence by subid
+```{r}
+count_study_dates |> 
+  group_by(subid) |> 
+  summarise(n_total = sum(n),
+            n_prompts = sum(n_prompts)) |> 
+  mutate(adherence = n_total/n_prompts) |> 
+  ggplot(aes(x = adherence)) +
+  geom_histogram(color = "black", fill = "light grey", binwidth = .1, center = .55) +
+  scale_x_continuous(breaks = c(0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.0)) +
+  labs(y = "Frequency", x = "Proportion of daily survey's completed",
+       subtitle = "Daily Survey Adherence (N = 247)") +
+  geom_vline(aes(xintercept = mean_ema$mean), linewidth = .3) +
+  theme_classic()
+```
+
+
+## Adherence over time
+
+   
+Quite a few people have over 365 days of EMA. **Lose these in adherence over 12 month plot**.    
+```{r}
+dates |> 
+  mutate(n = study_end - study_start) |> 
+  arrange(desc(n)) |> 
+  filter(n > 365) |> 
+  print(n = Inf)
+```
+
+
+Slice into 30 day bins 
+```{r}
+study_months <- count_study_dates |> 
+  group_by(subid) |> 
+  slice(1:30) |> 
+  mutate(month = 1) |> 
+  bind_rows(count_study_dates |> 
+    group_by(subid) |> 
+    slice(31:60) |> 
+    mutate(month = 2)) |> 
+  bind_rows(count_study_dates |> 
+    group_by(subid) |> 
+    slice(61:90) |> 
+    mutate(month = 3)) |> 
+  bind_rows(count_study_dates |> 
+    group_by(subid) |> 
+    slice(91:120) |> 
+    mutate(month = 4)) |> 
+  bind_rows(count_study_dates |> 
+    group_by(subid) |> 
+    slice(121:150) |> 
+    mutate(month = 5)) |> 
+  bind_rows(count_study_dates |> 
+    group_by(subid) |> 
+    slice(151:180) |> 
+    mutate(month = 6)) |> 
+  bind_rows(count_study_dates |> 
+    group_by(subid) |> 
+    slice(181:210) |> 
+    mutate(month = 7)) |> 
+  bind_rows(count_study_dates |> 
+    group_by(subid) |> 
+    slice(211:240) |> 
+    mutate(month = 8)) |> 
+  bind_rows(count_study_dates |> 
+    group_by(subid) |> 
+    slice(241:270) |> 
+    mutate(month = 9)) |> 
+  bind_rows(count_study_dates |> 
+    group_by(subid) |> 
+    slice(271:300) |> 
+    mutate(month = 10)) |> 
+  bind_rows(count_study_dates |> 
+    group_by(subid) |> 
+    slice(301:330) |> 
+    mutate(month = 11)) |> 
+  bind_rows(count_study_dates |> 
+    group_by(subid) |> 
+    slice(331:360) |> 
+    mutate(month = 12)) |> 
+  ungroup()
+```
+
+
+Get individual adherence scores 
+```{r}
+ema_month_adherence <- study_months |> 
+  group_by(subid, month) |> 
+  summarize(sum_n = sum(n), sum_prompts = sum(n_prompts), .groups = "rowwise") |> 
+  mutate(adherence = sum_n/sum_prompts) |> 
+  ungroup()
+```
+
+Summarize total adherence
+```{r}
+ema_month_adherence |> 
+  group_by(month) |> 
+  summarize(mean_adherence = mean(adherence)) 
+```
+
+Plot adherence by month
+```{r}
+ema_month_adherence |> 
+  group_by(month) |> 
+  summarize(mean_adherence = mean(adherence)) |> 
+  ggplot(aes(x = month, y = mean_adherence)) +
+  geom_point() +
+  geom_line() +
+  theme_classic() +
+  scale_x_continuous(name = "month", 
+                     breaks = seq(1, 12, 1)) +
+  scale_y_continuous(name = "adherence", 
+                     breaks = seq(0, 1, .1), 
+                     limits = c(0, 1)) +
+  labs(title = "Daily survey adherence over time (N = 247) ") +
+  theme(legend.title = element_blank()) +
+  geom_hline(aes(yintercept = mean(mean_adherence)), linetype = "dashed", linewidth = .3)
+```
+

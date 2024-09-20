@@ -13,9 +13,13 @@ editor_options:
 
 
 
+
+
 Purpose: This file calculates overall weekly EMA adherence using EMA survey data (`survey_daily.csv`). 
 
 ## Set up
+
+
 ```{r}
 #| message: false
 
@@ -33,7 +37,11 @@ path_shared <- format_path("studydata/risk2/data_processed/shared")
 ```
 
 
+
+
 ### Data
+
+
 
 ```{r}
 ema <- read_csv(here::here(path_shared, "survey_daily.csv"),
@@ -46,7 +54,11 @@ burden_qual <- read_csv(here::here(path_burden, "burden_qual.csv"),
                    show_col_types = FALSE)
 ```
 
+
+
 subids
+
+
 ```{r}
 subids <- burden_quant |> 
   select(subid) |> 
@@ -56,16 +68,24 @@ subids <- burden_quant |>
   unique()
 ```
 
+
+
 Filter ema to burden subids
+
+
 ```{r}
 ema <- ema |>
   filter(subid %in% subids)
 ```
 
 
+
+
 ### Overall Adherence
 
 Data still in long format so slicing to single variable on survey
+
+
 ```{r}
 ema <- ema |> 
   group_by(subid, start_date) |> 
@@ -73,7 +93,11 @@ ema <- ema |>
   ungroup()
 ```
 
+
+
 Study start and end dates for each subid
+
+
 ```{r}
 study_start <- ema |> 
   group_by(subid) |> 
@@ -96,6 +120,18 @@ dates <- tibble(subid = subids) |>
   full_join(study_end, by = "subid")
 ```
 
+
+
+
+Days on study   
+Min days on study = 122 days (all participants provided data for at least 4 months)
+
+
+```{r}
+dates |> 
+  mutate(study_days = study_end - study_start) |> 
+  arrange(study_days)
+```
 
 ```{r}
 dates |> 
@@ -104,7 +140,11 @@ dates |>
 ```
 
 
+
+
 Subid 1146 has incorrect start year. Formatting issue with first EMA - remove this survey for calculating dates.
+
+
 ```{r}
 ema |> 
   filter(subid == 1146)
@@ -113,7 +153,11 @@ ema <- ema |>
   filter(user_survey_guid != "0b4ef392-61ef-4631-b672-117a4e642f67")
 ```
 
+
+
 Recalculate study start and end dates
+
+
 ```{r}
 study_start <- ema |> 
   group_by(subid) |> 
@@ -137,7 +181,11 @@ dates <- tibble(subid = subids) |>
 ```
 
 
+
+
 Get all study days for each subid
+
+
 ```{r}
 # function to map over
 get_study_days <- function(the_subid, dates) {
@@ -152,7 +200,11 @@ study_dates <- subids |>
 ```
 
 
+
+
 Count surveys per study day (day starts at 6 am) 
+
+
 ```{r}
 ema_count <- ema |>
   mutate(study_day = if_else(hour(start_date) >= 6, 
@@ -165,7 +217,11 @@ ema_count <- ema_count |>
   mutate(n = if_else(n > 1, 1, n))
 ```
 
+
+
 Add counts to study dates
+
+
 ```{r}
 count_study_dates <- study_dates |> 
   left_join(ema_count, by = c("subid", "study_day")) |> 
@@ -174,7 +230,11 @@ count_study_dates <- study_dates |>
 ```
 
 
+
+
 calculate mean adherence
+
+
 ```{r}
 mean_ema <- count_study_dates |> 
   group_by(subid) |> 
@@ -185,10 +245,14 @@ mean_ema <- count_study_dates |>
 ```
 
 
+
+
 On average participants (N = `r length(subids)`) completed `r round(mean_ema$mean, 2)` daily surveys each day they were on study. That is their overall adherence for a once daily EMA was `r round(mean_ema$mean, 2)*100`%.    
 
 
 Hist of overall adherence by subid
+
+
 ```{r}
 count_study_dates |> 
   group_by(subid) |> 
@@ -205,10 +269,14 @@ count_study_dates |>
 ```
 
 
+
+
 ## Adherence over time
 
    
 Quite a few people have over 365 days of EMA. **Lose these in adherence over 12 month plot**.    
+
+
 ```{r}
 dates |> 
   mutate(n = study_end - study_start) |> 
@@ -218,7 +286,11 @@ dates |>
 ```
 
 
+
+
 Slice into 30 day bins 
+
+
 ```{r}
 study_months <- count_study_dates |> 
   group_by(subid) |> 
@@ -272,7 +344,11 @@ study_months <- count_study_dates |>
 ```
 
 
+
+
 Get individual adherence scores 
+
+
 ```{r}
 ema_month_adherence <- study_months |> 
   group_by(subid, month) |> 
@@ -281,14 +357,22 @@ ema_month_adherence <- study_months |>
   ungroup()
 ```
 
+
+
 Summarize total adherence
+
+
 ```{r}
 ema_month_adherence |> 
   group_by(month) |> 
   summarize(mean_adherence = mean(adherence)) 
 ```
 
+
+
 Plot adherence by month
+
+
 ```{r}
 ema_month_adherence |> 
   group_by(month) |> 
