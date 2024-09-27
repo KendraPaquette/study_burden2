@@ -87,8 +87,17 @@ We used Structural topic modeling. This acts differently from more traditional t
 ### Adherence
 
 #### Participation
+Attrition and disposition overall.
+
+<!--differences by demographics and lapses-->
+
 
 #### Daily Updates
+The overall adherence for the daily updates was 75%. Figure 1 shows the overall adherence rates for the daily update by month on study.  
+
+<!-- Report demographic differences in adherence  -->
+
+<!-- Report relationship between number of lapses in a month and adherence  -->
 
 #### Monthly Updates
 
