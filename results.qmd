@@ -1,0 +1,58 @@
+---
+title: "Results" 
+author: "Kendra Wyant"
+date: "`r lubridate::today()`"
+format: 
+  html: 
+    embed-resources: true
+    toc: true 
+    toc_depth: 4
+editor_options: 
+  chunk_output_type: console
+--- 
+
+```{r}
+options(knitr.kable.NA = '')
+```
+
+
+## Results
+
+### Participant Characteristics
+A total of 336<!--or 335--> participants enrolled in our study and provided at least one month of data. [@tbl-demo] presents the demographic and clinical characteristics of these participants. 
+
+{{< embed notebooks/mak_demo_table.qmd#tbl-demo >}} 
+
+
+
+### Adherence
+
+#### Participation
+A total of 336 participants enrolled in our study and provided at least one month of EMA data. 247 participants provided at least four months of data and completed the participant experience questionnaire (see Figure 1).  
+
+<!--differences by demographics and lapses-->
+
+
+#### Daily Updates
+The overall adherence for the daily updates was 75%. Figure 1 shows the overall adherence rates for the daily update by month on study.  
+
+<!-- Report demographic differences in adherence  -->
+
+<!-- Report relationship between number of lapses in a month and adherence  -->
+
+#### Monthly Updates
+
+
+
+### Participant Experience Questionannaire Quantitative Results
+
+#### Interference
+
+#### Dislike
+
+
+### Participant Experience Questionannaire Qualitative Results
+
+#### Thematic Analysis
+
+#### Topic Modeling

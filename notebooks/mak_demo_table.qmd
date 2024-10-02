@@ -1,0 +1,212 @@
+---
+title: "Demographics Table" 
+author: "Kendra Wyant"
+date: "`r lubridate::today()`"
+format: 
+  html: 
+    embed-resources: true
+    toc: true 
+    toc_depth: 4
+editor_options: 
+  chunk_output_type: console
+--- 
+
+```{r}
+#| message: false
+#| warning: false
+
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(source("https://github.com/jjcurtin/lab_support/blob/main/format_path.R?raw=true"))
+library(kableExtra)
+
+path_shared <- format_path("studydata/risk2/data_processed/shared")
+
+options(knitr.kable.NA = '')
+```
+
+
+
+## Data and calculations
+
+```{r}
+ema <- read_csv(here::here(path_shared, "survey_daily.csv"),
+                show_col_types = FALSE) |> 
+  mutate(start_date = as_datetime(start_date, tz = "America/Chicago"))
+
+
+intake <- read_csv(here::here(path_shared, "survey_intake_wide.csv"),
+                show_col_types = FALSE) |> 
+  glimpse()
+
+lapses <- read_csv(here::here(path_shared, "survey_lapses.csv"), col_types = cols()) 
+```
+
+
+```{r}
+
+# Calcs to make df for table 1 (demographics and clinical characteristics)
+n_total <- 151
+
+dem_age <- screen |>
+  summarise(mean = as.character(round(mean(dem_1, na.rm = TRUE), 1)),
+            SD = as.character(round(sd(dem_1, na.rm = TRUE), 1)),
+            min = as.character(min(dem_1, na.rm = TRUE)),
+            max = as.character(max(dem_1, na.rm = TRUE))) |>
+  mutate(var = "Age",
+         n = as.numeric(""),
+         perc = as.numeric("")) |>
+  select(var, n, perc, everything()) 
+
+dem_sex <-  screen |>
+  select(var = dem_2) |>
+  group_by(var) |>
+  summarise(n = n()) |>
+  mutate(perc = (n / sum(n)) * 100) |> 
+  add_row(var = "Sex", .before = 1)
+
+dem_race <- screen |>
+  select(var = dem_3) |>
+  mutate(var = fct_relevel(factor(var,
+                         c("American Indian/Alaska Native", "Asian", "Black/African American",
+                           "White/Caucasian", "Other/Multiracial")))) |>
+  group_by(var) |>
+  summarise(n = n()) |>
+  mutate(perc = (n / sum(n)) * 100) |>
+  add_row(var = "Race", .before = 1)
+  
+  
+dem_ethnicity <- screen |>
+  select(var = dem_4) |>
+  mutate(var = case_when(var == "No, I am not of Hispanic, Latino, or Spanish origin" ~ "No",
+                         TRUE ~ "Yes"),
+         var = fct_relevel(factor(var, c("Yes", "No")))) |>
+  group_by(var) |>
+  summarise(n = n()) |>
+  mutate(perc = (n / sum(n)) * 100) |>
+  add_row(var = "Hispanic, Latino, or Spanish origin", .before = 1)
+
+dem_education <- screen |>
+  select(var = dem_5) |>
+  mutate(var = fct_relevel(factor(var,
+                         c("Less than high school or GED degree", "High school or GED",
+                           "Some college", "2-Year degree", "College degree", "Advanced degree")))) |>
+  group_by(var) |>
+  summarise(n = n()) |>
+  mutate(perc = (n / sum(n)) * 100) |>
+  add_row(var = "Education", .before = 1)
+
+dem_employment <- screen |>
+  select(var = dem_6, dem_6_1) |>
+  mutate(var = case_when(dem_6_1 == "Full-time" ~ "Employed full-time",
+                         dem_6_1 == "Part-time" ~ "Employed part-time",
+                         TRUE ~ var)) |>
+  mutate(var = fct_relevel(factor(var,
+                         c("Employed full-time", "Employed part-time", "Full-time student",
+                           "Homemaker", "Disabled", "Retired", "Unemployed",
+                           "Temporarily laid off, sick leave, or maternity leave",
+                           "Other, not otherwise specified")))) |>
+  group_by(var) |>
+  summarise(n = n()) |>
+  mutate(perc = (n / sum(n)) * 100) |>
+  add_row(var = "Employment", .before = 1)
+
+dem_income <- screen |>
+  summarise(mean = format(round(mean(dem_7, na.rm = TRUE), 0), big.mark = ","),
+            SD = format(round(sd(dem_7, na.rm = TRUE), 0), big.mark = ","),
+            min =format(round(min(dem_7, na.rm = TRUE), 0), big.mark = ","),
+            max = format(round(max(dem_7, na.rm = TRUE), 0), scientific = FALSE, big.mark = ",")) |>
+  mutate(var = "Personal Income",
+        n = as.numeric(""),
+        perc = as.numeric(""),
+        mean = str_c("$", as.character(mean)),
+        SD = str_c("$", as.character(SD)),
+        min = str_c("$", as.character(min)),
+        max = as.character(max)) |>
+  select(var, n, perc, everything())
+
+dem_marital <- screen |>
+  select(var = dem_8) |>
+  mutate(var = case_when(var == "Never Married" ~ "Never married",
+                         TRUE ~ var)) |>
+  mutate(var = fct_relevel(factor(var,
+                         c("Never married", "Married", "Divorced", "Separated",
+                           "Widowed")))) |>
+  group_by(var) |>
+  summarise(n = n()) |>
+  mutate(perc = (n / sum(n)) * 100) |> 
+  add_row(var = "Marital Status", .before = 1)
+
+dem_aud <- screen |>
+  summarise(mean = as.character(round(mean(dsm5_total, na.rm = TRUE), 1)),
+            SD = as.character(round(sd(dsm5_total, na.rm = TRUE), 1)),
+            min = as.character(min(dsm5_total, na.rm = TRUE)),
+            max = as.character(max(dsm5_total, na.rm = TRUE))) |>
+  mutate(var = "DSM-5 AUD Symptom Count",
+         n = as.numeric(""),
+         perc = as.numeric("")) |>
+  select(var, n, perc, everything()) 
+
+lapses_per_subid <- screen |>
+  select(subid) |>
+  left_join(lapses |>
+  janitor::tabyl(subid) |>
+  select(-percent), by = "subid") |>
+  mutate(n = if_else(is.na(n), 0, n),
+         lapse = if_else(n > 0, "yes", "no"))
+
+lapse_info <- lapses_per_subid |>
+  group_by(lapse) |>
+  rename(var = lapse) |>
+  mutate(var = factor(var, levels = c("yes", "no"), labels = c("Yes", "No"))) |>
+  summarise(n = n()) |>
+  mutate(perc = (n / n_total) * 100,
+         mean = NA_character_,
+         SD = NA_character_,
+         min = NA_character_,
+         max = NA_character_) |>
+  full_join(lapses_per_subid |>
+  summarise(mean = as.character(round(mean(n), 1)),
+            SD = as.character(round(sd(n), 1)),
+            min = as.character(round(min(n), 1)),
+            max = as.character(round(max(n), 1))) |>
+  mutate(var = "Number of reported lapses"),
+  by = c("var", "mean", "SD", "min", "max")) |> 
+  add_row(var = "Reported 1 or More Lapse During Study Period", .before = 1)
+
+table_dem <- dem_age |> 
+  bind_rows(dem_sex) |> 
+  bind_rows(dem_race) |> 
+  bind_rows(dem_ethnicity) |> 
+  bind_rows(dem_education) |> 
+  bind_rows(dem_employment) |> 
+  bind_rows(dem_income) |> 
+  bind_rows(dem_marital) |> 
+  bind_rows(dem_aud) |> 
+  bind_rows(lapse_info) |> 
+  mutate(range = str_c(min, "-", max),
+         perc = round(perc, 1)) |> 
+  select(-c(min, max)) |> 
+  rename(N = n,
+         `%` = perc,
+         M = mean, 
+         Range = range)
+```
+
+
+
+
+
+### Table 1: Demographic and Lapse Characteristics
+
+
+```{r}
+#| label: tbl-demo
+#| tbl-cap: "Demographic and Lapse Characteristics"
+
+table_dem |> 
+  knitr::kable()
+
+```
+
+
+
