@@ -81,37 +81,46 @@ We used Structural topic modeling. This acts differently from more traditional t
 ## Results
 
 ### Participant Characteristics
-247 participants provided at least four months of data and completed the patient experience questionnaire. Participant ages ranged from 18 - 65+ years. 70% of participants (N = 172) were non-Hispanic White, 15% of participants (N = 38) were Black/African American, and 9% of participants (N = 21) were of Hispanic, Latino, or Spanish origin. 50% of participants (N = 124) identified as men and 47% of participants (N = 117) identified as women. 51% of participants (N = 127) had an income below $25,000. Table 1 presents demographic and clinical characteristics of our participants. 
+A total of 336 participants enrolled in our study and provided at least one month of data. [@tbl-demo] presents the demographic and clinical characteristics of these participants. 
+
+{{< embed notebooks/mak_demo_table.qmd#tbl-demo >}} 
+
 
 
 ### Adherence
 
 #### Participation
-Attrition and disposition overall.
+A total of 336 participants enrolled in our study and provided at least one month of EMA data. @fig-1 shows participant attrition over 12 months. There was no significant difference in attrition between participants who were Non-Hispanic White and participants who were not White. There was no significant difference in attrition between participants who lapsed on study and those who did not lapse.
 
-<!--differences by demographics and lapses-->
-
-
-#### Daily Updates
-The overall adherence for the daily updates was 75%. Figure 1 shows the overall adherence rates for the daily update by month on study.  
-
-<!-- Report demographic differences in adherence  -->
-
-<!-- Report relationship between number of lapses in a month and adherence  -->
-
-#### Monthly Updates
+{{< embed notebooks/ana_adherence.qmd#fig-1 >}}
 
 
 
-### Self-Report Measures
+#### Daily and Monthly Updates
+The overall adherence for the daily updates was 75%. @fig-2 shows the overall adherence rates for the daily update by month on study. Daily update adherence did not significantly differ by race. Daily update adherence did significantly differ by whether someone lapsed on study. Participants who lapsed on study, had on average 6.4% lower compliance compared to participants who did not lapse while on study. The overall adherence for the monthly updates was 96%.   
+
+
+{{< embed notebooks/ana_adherence.qmd#fig-2 >}}
+
+
+### Participant Experience Questionannaire Quantitative Results
+247 participants provided at least four months of data and completed the participant experience questionnaire. These participants were included in following analyses.
+
 
 #### Interference
+84% of participants (N = 207/247) disagreed (i.e., endorsing "Strongly disagree" or "Mildly disagree") with the statement "Completing the daily update interfered with my daily activities". 79% of participants (N = 196/247) disagreed with the statement "Completing the monthly update interfered with my daily activities". We provide histograms of participant responses in the supplement.   
+
+An ICC (type 3) showed that, on average, interference ratings were moderately consistent across the two updates, ICC = .50, 95% CI = [.40 - .59].
+
 
 #### Dislike
+85% of participants (N = 211/247) disagreed with the statement "I disliked completing the daily update". 73% of participants (N = 179/246) disagreed with the statement "I disliked completing the monthly update". Fewer participants disagreed with the statement "I disliked [sensing method]" for geolocation (65%; N = 161/247), SMS and phone logs (64%; N = 158/246), and SMS content (64%; N = 156/245). As a result we saw an increase in responses endorsing a neutral stance toward these passive sensing methods ("Agree and disagree equally"). We provide histograms of participant responses by sensing method in the supplement.   
+
+An ICC (type 3) showed that, on average, dislike ratings were moderately consistent across sensing methods, ICC = .48, 95% CI = [.42 - .54].
 
 
+### Participant Experience Questionannaire Qualitative Results
 
-### Qualatative Analyses
 
 #### Thematic Analysis
 <!-- - We began with a total of 1,356 comments. The first coder went through and identified any irrelevant comments, comments that were two words or less, while coding independently. After the excluding process, there were 647 comments in total retained and coded by both independent coders. For the results, we’ll report on the overall percentage of comments in each them and separately by data type and also differences in proportion of themes by race/ethnicity. -->
