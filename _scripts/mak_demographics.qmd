@@ -27,7 +27,7 @@ From Susan: It was never determined why those questions didn't resolve for them.
 
 Primary variables for analyses:    
 
-- race (Non-Hispanic White, Black, Hispanic, Other)
+- race (Non-Hispanic White, Black, Hispanic, Other/Multiracial)
 - gender (male, female)
 - income (less than \$25000, more than \$25000)
 - location (will be calculated in separate script)
@@ -61,9 +61,8 @@ burden <- read_csv(file.path(path_burden, "burden_quant.csv"),
 
 Intake survey (with demographics)
 ```{r}
-intake_survey <- read_csv(here::here(path_processed, "survey_intake.csv"),
-                         show_col_types = FALSE) |> 
-  filter(subid %in% burden$subid)
+intake_survey <- read_csv(here::here(path_processed, "survey_intake_wide.csv"),
+                         show_col_types = FALSE) 
 ```
 
 
@@ -83,44 +82,76 @@ burden |>
 
 ## Missing data
 ```{r}
-intake_survey |> 
-  filter(is.na(answer)) |> 
-  janitor::tabyl(variable_name) |> 
-  arrange(desc(n))
-```
-
-```{r}
-intake_survey |> 
-  filter(variable_name == "age" & is.na(answer))
+naniar::miss_var_summary(intake_survey) |> 
+  print(n = 100)
 ```
 
 Missing demographics for subid 1006 
 ```{r}
 intake_survey |> 
   filter(subid == 1006) |> 
-  view()
+  glimpse()
 ```
 
 
 ## Create Demographics Tibble with variables of interest
 ```{r}
 dem <- intake_survey |> 
-  select(subid, variable_name, answer) |> 
-  filter(variable_name %in% c("race", "gender", "orientation", "income",
-                              "employment", "education", "age", "romantic_status",
-                              "living_arrangement_1", "med", "whoassist_life_overdose")) 
+  select(subid, starts_with("race"), -race_other_text_text, gender, orientation, income, 
+         employment, education, age, romantic_status, med, whoassist_life_overdose)
+```
+
+Update race variables (temp remove 1006 since missing dem vars)   
+```{r}
+dem <- dem |> 
+  filter(subid != 1006) |>
+  rowwise() |> 
+  mutate(race = case_when(sum(race_american_indian:race_pacific_islander, na.rm = TRUE) == 0 &
+                            race_white == 1 ~ "Non-Hispanic White",
+                          race_black == 1 & sum(race_american_indian:race_asian, na.rm = TRUE) == 0 &
+                            sum(race_hispanic:race_white, na.rm = TRUE) == 0 ~ 
+                            "Black/African American",
+                          race_hispanic == 1 & sum(race_american_indian:race_black, na.rm = TRUE) == 0 &
+                            sum(race_not_listed:race_white, na.rm = TRUE) == 0 ~ "Hispanic",
+                          TRUE ~ "Other or Multiracial")) |> 
+  ungroup()
+
+table(dem$race)
+```
+
+Allow for people to be in more than one race category
+```{r}
+dem <- dem |> 
+  rowwise() |> 
+  mutate(race_multiple = case_when(sum(race_american_indian:race_pacific_islander, na.rm = TRUE) == 0 &
+                            race_white == 1 ~ "Non-Hispanic White",
+                          race_black == 1  ~ "Black/African American",
+                          race_hispanic == 1 ~ "Hispanic",
+                          TRUE ~ "Other")) |> 
+  ungroup()
+
+table(dem$race_multiple)
 ```
 
 
-Add missing demographics for subid 1069 (set to NA). 
+
+Add missing demographics for subid 1006 and 1069 
 
 ```{r}
 dem <- dem |> 
-  bind_rows(tibble(subid = 1069,
-                   variable_name = c("race", "gender", "orientation", "income",
-                              "employment", "education", "age", "romantic_status",
-                              "living_arrangement_1", "med", "whoassist_life_overdose"),
-                   answer = NA_character_))
+  select(-c(race_american_indian:race_white)) |> 
+  full_join(tibble(subid = c(1069, 1006),
+                   gender = "Man", 
+                   orientation = NA, 
+                   income = NA, 
+                   employment = NA,
+                   education = NA, 
+                   age = "36-45", 
+                   romantic_status = NA, 
+                   med = c(NA, "Medication taken daily (e.g., Suboxone, Methadone) and medication taken monthly (e.g., Vivitrol)"), 
+                   whoassist_life_overdose = NA,
+                   race = "Non-Hispanic White",
+                   race_multiple = "Non-Hispanic White")) 
 ```
 
 `r length(unique(dem$subid))` subids in final tibble.
@@ -128,265 +159,82 @@ dem <- dem |>
 
 
 
-## Pivot table wideron demographic variables
-
-Primary variables for analyses:    
-
-- race (Non-Hispanic White, Black, Hispanic, Other)
-- gender (male, female)
-- income (less than \$25000, more than \$25000)
-
-
-### First handle Race/ethnicity
-
-```{r}
-dem |> 
-  filter(variable_name == "race") |> 
-  tabyl(answer) |> 
-  print_kbl()
-```
-
-Other 
-
-```{r}
-tabyl(subset(intake_survey, variable_name == "race_other")$answer)
-```
-
-
-Will create following race categories: Non-Hispanic White, Black, Hispanic, other
-
-*Note that some people endorsed more than one race and we are not considering all possible combinations in the burden analyses.*
-
-```{r}
-race <-  dem |> 
-  filter(variable_name == "race") |> 
-  group_by(subid) |> 
-  summarize(race = paste(answer, collapse = "")) |> 
-  mutate(
-    race = if_else(race == "White/Caucasian", "Non-Hispanic White", race),
-    race = str_remove(race, "White/Caucasian"),
-    race = if_else(race == "American Indian/Alaska NativeHispanic, Latino, or Spanish origin", "Hispanic, Latino, or Spanish origin", race),
-    race = if_else(race == "Black/African AmericanHispanic, Latino, or Spanish origin" | race == "Hispanic, Latino, or Spanish originBlack/African American" |
-                     race == "American Indian/Alaska NativeBlack/African American",
-                   "Black/African American", race),
-    race = if_else(race == "Not listed aboveHispanic, Latino, or Spanish originAmerican Indian/Alaska NativeAsian", "Hispanic, Latino, or Spanish origin", race)) |> 
-  mutate(race = if_else(race %in% c("Black/African American",
-                                    "Hispanic, Latino, or Spanish origin",
-                                    "Non-Hispanic White"), race, "other")) |> 
-  mutate(race = if_else( subid %in% c(1006, 1069), NA_character_, race))
-tabyl(race$race)
-```
-
-
-Pivot dem without race
-```{r}
-dem_wide <- dem |> 
-  filter(!variable_name %in% c("race", "race_other")) |> 
-  pivot_wider(names_from = variable_name, values_from = answer)
-```
-
-Add race
-```{r}
-dem_wide <- dem_wide |> 
-  left_join(race, by = "subid") |> 
-  glimpse()
-```
-
-## Pull some missing demographics from consent   
-
-1006 (from Susan - gender = Man)
-```{r}
-token_qualtrics <-
-  read_csv(file.path(path_admin, "credentials.csv"), show_col_types = FALSE) |>
-  filter(resource == "qualtrics") |>
-  pull(token)
-
-enroll <- tidy_qualtrics("dem", token_qualtrics)
-
-enroll |> filter(subid == "1006")
-
-enroll |> filter(subid == "1006") |> pull(dob) # 40
-```
-
-1069
-```{r}
-enroll |> filter(subid == "1069")
-enroll |> filter(subid == "1069") |> pull(dob) # 44
-```
-
-```{r}
-dem_wide <- dem_wide |> 
-  mutate(race = if_else(subid %in% c(1006, 1069), "Non-Hispanic White", race),
-         gender = if_else(subid %in% c(1006, 1069), "Man", gender),
-         age = if_else(subid %in% c(1006, 1069), "36-45", age))
-```
-
-check missing data again
-```{r}
-naniar::miss_var_summary(dem_wide)
-```
-
 
 ## Check responses on other variables
 
 ### Gender
 
 ```{r}
-tabyl(dem_wide$gender) 
+tabyl(dem$gender) 
 ```
 
 Make courser categories for gender
 
 ```{r}
-dem_wide <- dem_wide |> 
+dem <- dem |> 
   mutate(gender = if_else(gender == "Prefer not to say", NA, gender),
          gender = if_else(gender %in% c("Man", "Woman") | is.na(gender), 
                           gender, "other"))
 
-tabyl(dem_wide$gender)
+tabyl(dem$gender)
 ```
 
 ### Orientation
 
 ```{r}
-tabyl(dem_wide$orientation) 
+tabyl(dem$orientation) 
 ```
 
 ### Income
 
 ```{r}
-tabyl(dem_wide$income) 
+tabyl(dem$income) 
 ```
 
 ### Employment
 
 ```{r}
-tabyl(dem_wide$employment) 
+tabyl(dem$employment) 
 ```
 
 ### Education
 
 ```{r}
-tabyl(dem_wide$education) 
+tabyl(dem$education) 
 ```
 
 ### Age
 
 ```{r}
-tabyl(dem_wide$age) 
+tabyl(dem$age) 
 ```
 
 ### Committed Relationship
 
 ```{r}
-tabyl(dem_wide$romantic_status) 
+tabyl(dem$romantic_status) 
 ```
 
-### Living Arrangement
-
-```{r}
-tabyl(dem_wide$living_arrangement_1) 
-```
 
 ### Medication
 
 ```{r}
-tabyl(dem_wide$med) 
+tabyl(dem$med) 
 ```
 
 ### Lifetime History of Overdose
 
 ```{r}
-tabyl(dem_wide$whoassist_life_overdose) 
+tabyl(dem$whoassist_life_overdose) 
 ```
 
-
-
-
-## Add location data
-
-
-## Get total DSM score
-
-```{r}
-dsm <- intake_survey |> 
-  filter(str_detect(variable_name, "dsm")) |> 
-  select(subid, question_content, variable_name, answer) |> 
-  mutate(answer = if_else(answer == "Yes", 1, 0))
-```
-
-```{r}
-dsm <- dsm |> 
-  group_by(subid) |> 
-  mutate(dsm_criteria_1 = if_else((variable_name == "dsm_1" & answer == 1) | (variable_name == "dsm_2" & answer == 1) , 1, 0),
-         dsm_criteria_2 = if_else(variable_name == "dsm_3" & answer == 1, 1, 0),
-         dsm_criteria_3 = if_else((variable_name == "dsm_4" & answer == 1) | (variable_name == "dsm_5" & answer == 1) | (variable_name == "dsm_6" & answer == 1)  , 1, 0),
-         dsm_criteria_4 = if_else((variable_name == "dsm_11" & answer == 1) , 1, 0),
-         dsm_criteria_5 = if_else((variable_name == "dsm_7" & answer == 1) , 1, 0),
-         dsm_criteria_6 = if_else((variable_name == "dsm_8" & answer == 1) , 1, 0),
-         dsm_criteria_7 = if_else((variable_name == "dsm_9" & answer == 1) , 1, 0),
-         dsm_criteria_8 = if_else((variable_name == "dsm_10" & answer == 1) , 1, 0),
-         dsm_criteria_9 = if_else((variable_name == "dsm_12" & answer == 1) , 1, 0),
-         dsm_criteria_10 = if_else((variable_name == "dsm_13" & answer == 1)  | (variable_name == "dsm_14" & answer == 1) , 1, 0),
-         dsm_criteria_11 = if_else((variable_name == "dsm_15" & answer == 1)  | (variable_name == "dsm_16" & answer == 1) , 1, 0)) |> 
-  summarise(dsm_criteria_1 = if_else(sum(dsm_criteria_1) >= 1, 1, 0),
-            dsm_criteria_2 = if_else(sum(dsm_criteria_2) >= 1, 1, 0),
-            dsm_criteria_3 = if_else(sum(dsm_criteria_3) >= 1, 1, 0),
-            dsm_criteria_4 = if_else(sum(dsm_criteria_4) >= 1, 1, 0),
-            dsm_criteria_5 = if_else(sum(dsm_criteria_5) >= 1, 1, 0),
-            dsm_criteria_6 = if_else(sum(dsm_criteria_6) >= 1, 1, 0),
-            dsm_criteria_7 = if_else(sum(dsm_criteria_7, na.rm = TRUE) >= 1, 1, 0),
-            dsm_criteria_8 = if_else(sum(dsm_criteria_8, na.rm = TRUE) >= 1, 1, 0),
-            dsm_criteria_9 = if_else(sum(dsm_criteria_9) >= 1, 1, 0),
-            dsm_criteria_10 = if_else(sum(dsm_criteria_10) >= 1, 1, 0),
-            dsm_criteria_11 = if_else(sum(dsm_criteria_10) >= 1, 1, 0)) 
-```
-
-```{r}
-dsm <- dsm |> 
-  rowwise() |> 
-  mutate(dsm_total = sum(dsm_criteria_1, dsm_criteria_2, dsm_criteria_3,
-                         dsm_criteria_4, dsm_criteria_5, dsm_criteria_6,
-                         dsm_criteria_7, dsm_criteria_8, dsm_criteria_9,
-                         dsm_criteria_10, dsm_criteria_11, na.rm = TRUE)) |> glimpse()
-```
-
-```{r}
-dsm |> 
-  ungroup() |> 
-  summarize(min(dsm_total),
-            max(dsm_total),
-            mean(dsm_total),
-            sd(dsm_total),
-            median(dsm_total)) |> 
-  glimpse()
-
-tabyl(dsm$dsm_total)
-```
-
-Add dsm score to dem tibble
-```{r}
-dem_final <- dem_wide |> 
-  left_join(dsm |> 
-  select(subid, dsm_total), by = "subid")
-
-glimpse(dem_final)
-```
-
-## Final EDA
-
-`r nrow(247)` rows. 
-
-```{r}
-naniar::miss_var_summary(dem_final)
-```
 
 
 
 ## Save out tibble
 
 ```{r}
-dem_final |> 
+dem |> 
   write_csv(here::here(path_burden, "demographics.csv"))
 ```
 

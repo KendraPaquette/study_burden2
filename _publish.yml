@@ -1,0 +1,4 @@
+- source: results.qmd
+  quarto-pub:
+    - id: 0e26e050-2ebd-419d-b125-a28017fbc7ca
+      url: 'https://kendra-wyant.quarto.pub/results'

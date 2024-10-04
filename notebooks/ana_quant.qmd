@@ -74,6 +74,10 @@ burden <- read_csv(here::here(path_burden, "burden_quant.csv"),
                                           "Agree and disagree equally", "Mildly disagree", 
                                           "Strongly disagree"))) |> 
   glimpse()
+
+
+burden <- burden |> 
+  left_join(dem, by = "subid")
 ```
 
 
@@ -109,14 +113,57 @@ plot_int <- interference_plot_data |>
   summarise(means = mean(as.numeric(value), na.rm = TRUE)), linewidth = .705, color = "black") 
 ```
 
+By race
 ```{r}
-#| label: fig-1
-#| fig-cap: "Interference."
-#| fig-width: 7
+interference_plot_data_race <- burden |> 
+  select(race_multiple, contains("interfere")) |>   
+  pivot_longer(contains("interfere"), names_to = "measure", values_drop_na = TRUE) |> 
+  mutate(measure = factor(measure, 
+                          levels = c("daily_update_interfere", "monthly_update_interfere"),
+                          labels = c("Daily update", "Monthly update"))) |> 
+  mutate(value = factor(value, levels = c("Strongly agree", "Mildly agree", 
+                                          "Agree and disagree equally", "Mildly disagree", 
+                                          "Strongly disagree"))) 
 
 
-plot_int
+plot_int_race <- interference_plot_data_race |> 
+  filter(race_multiple != "Other") |> 
+  ggplot(aes(x = value, y = after_stat(prop), group = measure)) +
+  geom_bar(color = "black", fill = "light grey") +
+  facet_grid(race_multiple ~ measure) +
+  theme_classic() +
+  labs(y = "Proportion",
+       x = NULL,
+       title = "Completing the update interfered with my daily activities") +
+  theme(legend.position = "none",
+        text = element_text(size = 12),
+        axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ylim(0, 1) +
+  geom_vline(aes(xintercept = "Agree and disagree equally"), linetype = "dashed", linewidth = .4, color = "#787575") +
+  geom_vline(aes(xintercept = means), interference_plot_data_race |> 
+               filter(race_multiple != "Other") |> 
+  group_by(race_multiple, measure) |> 
+  summarise(means = mean(as.numeric(value), na.rm = TRUE)), linewidth = .705, color = "black") 
 ```
+
+```{r}
+plot_int
+
+plot_int_race
+```
+
+Proportion of participants who Disagreed with the statement "Completing the update interfered with my daily activities".
+```{r}
+interference_plot_data |> 
+  mutate(value = if_else(value == "Mildly disagree" | value == "Strongly disagree", 
+                         1, 0)) |>
+  group_by(measure) |> 
+  summarise(sum = sum(value),
+            n = n(),
+            prop = sum/n)
+```
+
+
 
 
 #### Correlation and Summary Statistics
@@ -181,6 +228,20 @@ burden_ana <- burden |>
 
 **Possibly add demographics into model as predictor**
 
+Overall correlations
+```{r}
+burden_ana |> 
+  select(contains("interfere")) |> 
+  cor()
+```
+
+
+ICC
+```{r}
+burden_ana |> 
+  select(contains("interfere")) |> 
+  psych::ICC()
+```
 
 ### Dislike
 
@@ -226,20 +287,17 @@ plot_dis <- dislike_plot_data |>
 plot_dis
 ```
 
-Overall correlations
+Proportion of participants who Disagreed with the statement "I disliked [sensing method]".
 ```{r}
-burden_ana |> 
-  select(contains("interfere")) |> 
-  cor()
+dislike_plot_data |> 
+  mutate(value = if_else(value == "Mildly disagree" | value == "Strongly disagree", 
+                         1, 0)) |>
+  group_by(measure) |> 
+  summarise(sum = sum(value),
+            n = n(),
+            prop = sum/n)
 ```
 
-
-ICC
-```{r}
-burden_ana |> 
-  select(contains("interfere")) |> 
-  psych::ICC()
-```
 
 #### Correlation and Summary Statistics
 

@@ -49,6 +49,11 @@ burden_quant <- read_csv(here::here(path_burden, "burden_quant.csv"),
                    show_col_types = FALSE)
 burden_qual <- read_csv(here::here(path_burden, "burden_qual.csv"),
                    show_col_types = FALSE)
+
+dem <- read_csv(here::here(path_burden, "demographics.csv"),
+                show_col_types = FALSE) 
+
+lapses <- read_csv(here::here(path_shared, "survey_lapses.csv"), col_types = cols()) 
 ```
 
 burden subids
@@ -210,6 +215,111 @@ DiagrammeR::grViz("
   ", height = "1000px") 
 ```
 
+Plot attrition by month
+```{r}
+#| label: fig-1
+#| fig-cap: "Study Attrition by Month"
+
+disposition <- tibble(n = c(month_1, month_2, month_3, month_4, month_5, month_6, 
+                            month_7, month_8, month_9, month_10, month_11, month_12),
+                      prop = n/month_1,
+                      month = 1:12)
+
+
+disposition |> 
+  group_by(month) |> 
+  ggplot(aes(x = month, y = prop)) +
+  geom_point() +
+  geom_line() +
+  theme_classic() +
+  scale_x_continuous(name = "Month", 
+                     breaks = seq(1, 12, 1)) +
+  scale_y_continuous(name = "Proportion of participants retained on study", 
+                     breaks = seq(0, 1, .1), 
+                     limits = c(0, 1)) +
+  labs(title = "Participant Attrition by month (N enrolled = 336)") +
+  theme(legend.title = element_blank()) 
+```
+
+
+Attrition at 11 4 months and 11 months by race
+```{r}
+dates_race <- dates |> 
+  left_join(dem |> 
+              select(subid, race_multiple), by = "subid")
+
+baseline_race <- dates_race |> 
+  group_by(race_multiple) |> 
+  summarise(baseline_n = n())
+
+month_4_race <- dates_race |> 
+  filter(study_days >= 120)  |> 
+  group_by(race_multiple) |> 
+  summarise(month_4_n = n())
+
+month_11_race <- dates_race |> 
+  filter(study_days >= 330)  |> 
+  group_by(race_multiple) |> 
+  summarise(month_11_n = n())
+
+data_race <- baseline_race |> 
+  left_join(month_4_race, by = "race_multiple") |> 
+  left_join(month_11_race, by = "race_multiple") |> 
+  mutate(month_4_prop = month_4_n/baseline_n,
+         month_11_prop = month_11_n/baseline_n,
+         race = if_else(race_multiple == "Non-Hispanic White", .5, -.5))
+
+
+m_4_month <- lm(month_4_prop ~ race, data = data_race)
+
+broom::tidy(m_4_month)
+
+m_11_month <- lm(month_11_prop ~ race, data = data_race)
+
+broom::tidy(m_11_month)
+```
+
+Attrition by lapse
+```{r}
+dates_lapse <- dates |> 
+  left_join(lapses |>
+              group_by(subid) |> 
+              summarise(n_lapse = n()), by = "subid") |>
+  mutate(n_lapse = if_else(is.na(n_lapse), 0, n_lapse),
+         lapse = if_else(n_lapse > 0, .5, -.5))
+
+baseline_lapse <- dates_lapse |> 
+  group_by(lapse) |> 
+  summarise(baseline_n = n())
+
+month_4_lapse <- dates_lapse |> 
+  filter(study_days >= 120)  |> 
+  group_by(lapse) |> 
+  summarise(month_4_n = n())
+
+month_11_lapse <- dates_lapse |> 
+  filter(study_days >= 330)  |> 
+  group_by(lapse) |> 
+  summarise(month_11_n = n())
+
+data_lapse <- baseline_lapse |> 
+  left_join(month_4_lapse, by = "lapse") |> 
+  left_join(month_11_lapse, by = "lapse") |> 
+  mutate(month_4_prop = month_4_n/baseline_n,
+         month_11_prop = month_11_n/baseline_n)
+
+
+m_4_month_lapse <- lm(month_4_prop ~ lapse, data = data_lapse)
+
+broom::tidy(m_4_month_lapse)
+
+m_11_month_lapse <- lm(month_11_prop ~ lapse, data = data_lapse)
+
+broom::tidy(m_11_month_lapse)
+```
+
+
+
 
 ### Daily Survey Overall Adherence 
 
@@ -281,6 +391,44 @@ count_study_dates |>
   geom_vline(aes(xintercept = mean_ema$mean), linewidth = .3) +
   theme_classic()
 ```
+
+Adherence by race
+```{r}
+daily_race <- count_study_dates |> 
+  group_by(subid) |> 
+  summarize(n_total = sum(n), prompt_total = sum(n_prompts)) |> 
+  mutate(mean = n_total/prompt_total) |> 
+  left_join(dem |> 
+              select(subid, race_multiple), by = "subid") |> 
+  mutate(race = if_else(race_multiple == "Non-Hispanic White", .5, -.5))
+
+m_daily_ad <- lm(mean ~ race, data = daily_race)
+
+broom::tidy(m_daily_ad)
+```
+
+Adherence by lapse
+```{r}
+lapses_per_subid <- count_study_dates |> 
+  group_by(subid) |> 
+  summarize(n_total = sum(n), prompt_total = sum(n_prompts)) |> 
+  mutate(mean = n_total/prompt_total)  |>
+  left_join(lapses |>
+              group_by(subid) |> 
+              summarise(n_lapse = n()), by = "subid") |>
+  mutate(n_lapse = if_else(is.na(n_lapse), 0, n_lapse),
+         lapse = if_else(n_lapse > 0, .5, -.5))
+
+m_daily_ad_lapse <- lm(mean ~ lapse, data = lapses_per_subid)
+
+broom::tidy(m_daily_ad_lapse)
+
+lapses_per_subid |> 
+  group_by(lapse) |>
+  summarize(mean = mean(mean))
+```
+
+
 
 ### Daily Survey Adherence over time 
 
@@ -369,7 +517,8 @@ ema_month_adherence |>
 
 Plot adherence by month
 ```{r}
-#| code-fold: true
+#| label: fig-2
+#| fig-cap: "Daily Update Adherence by Month on Study"
 
 ema_month_adherence |> 
   group_by(month) |> 
@@ -378,12 +527,12 @@ ema_month_adherence |>
   geom_point() +
   geom_line() +
   theme_classic() +
-  scale_x_continuous(name = "month", 
+  scale_x_continuous(name = "Month", 
                      breaks = seq(1, 12, 1)) +
-  scale_y_continuous(name = "adherence", 
+  scale_y_continuous(name = "Adherence", 
                      breaks = seq(0, 1, .1), 
                      limits = c(0, 1)) +
-  labs(title = "Daily survey adherence over time (N = 336) ") +
+  labs(title = "Daily update adherence over time (N = 336) ") +
   theme(legend.title = element_blank()) +
   geom_hline(aes(yintercept = mean(mean_adherence)), linetype = "dashed", linewidth = .3)
 ```
